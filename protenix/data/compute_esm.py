@@ -12,14 +12,14 @@ ESM_CONFIG = {
         "model_path": "esm2_t33_650M_UR50D.pt",
         "emb_dim": 1280,
         "n_layers": 33,
-        "emb_dir": "esm_cache/esm2_650m",
+        "emb_dir": "/data/rerank/protenix_release/esm_cache/esm2_650m",
     },
     "esm2-3b": {
         "type": "esm2",
         "model_path": "esm2_t36_3B_UR50D.pt",
         "emb_dim": 2560,
         "n_layers": 36,
-        "emb_dir": "esm_cache/esm2_3b",
+        "emb_dir": "/data/rerank/protenix_release/esm_cache/esm2_3b",
     },
 }
 

@@ -218,8 +218,8 @@ data_configs = {
         "enable": True,
         "model_name": "esm2-3b",
         "embedding_dim": 2560,
-        "embedding_dir": "esm_cache/esm2_3b",
-        "sequence_fpath": "esm_cache/pdb_labels_seqs.csv",
+        "embedding_dir": "/data/rerank/protenix_release/esm_cache/esm2_3b",
+        "sequence_fpath": "/data/rerank/protenix_release/esm_cache/pdb_labels_seqs.csv",
     },
     "template": {
         "enable": False,
