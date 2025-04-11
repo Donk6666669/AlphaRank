@@ -31,7 +31,7 @@ class ESMFeaturizer:
     def get_seq_to_filename(self, sequence_fpath: str) -> dict[str, str]:
         df = pd.read_csv(sequence_fpath)
         df["filename"] = (
-            df["part_id"].astype(str) + "/" + df["seq_label"].astype(str) + ".pt"
+            df["part_id"].astype(str).str.zfill(2) + "/" + df["seq_label"].astype(str) + ".pt"
         )
         return df.set_index("seq")["filename"].to_dict()
 
@@ -167,4 +167,5 @@ class ESMFeaturizer:
             except Exception as e:
                 print(f"[{part_id}] {e}")
                 error_parts.append(part_id)
-        print("Error parts: ", error_parts)
+        if len(error_parts) > 0:
+            print(f"Error parts: {error_parts}.")

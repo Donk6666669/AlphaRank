@@ -97,7 +97,7 @@ def compute_esm2_embeddings(
     repr_layer = model.num_layers
     embeddings = {}
     with torch.no_grad():
-        for batch_idx, (labels, strs, toks) in enumerate(tqdm(data_loader)):
+        for batch_idx, (labels, strs, toks) in enumerate(tqdm(data_loader, ncols=80)):
             print(
                 f"Processing {batch_idx + 1} of {len(batches)} batches ({toks.size(0)} sequences)"
             )
@@ -180,7 +180,8 @@ def process_pdb_dataset(
         )
         print(f"[{part_id}] Processed {len(lm_embeddings)} sequences in total. Done!")
 
-    print("Error parts: ", error_parts)
+    if len(error_parts) > 0:
+        print(f"Error parts: {error_parts}.")
 
 
 def main():

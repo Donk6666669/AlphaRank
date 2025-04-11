@@ -1,39 +1,9 @@
-# Copyright 2024 ByteDance and/or its affiliates.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-import argparse
-import os
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
+from tqdm import tqdm
 
-@dataclass
-class LocalColabFoldConfig:
-    """Configuration for ColabFold search."""
-
-    colabsearch: str
-    query_fpath: str
-    db_dir: str
-    results_dir: str
-    mmseqs_path: Optional[str] = None
-    db1: str = "uniref30_2302_db"
-    db2: Optional[str] = None
-    db3: Optional[str] = "colabfold_envdb_202108_db"
-    use_env: int = 1
-    filter: int = 1
-    db_load_mode: int = 0
+from scripts.preprocess.seq_entropy import seq_entropy_filter
 
 
 class A3MProcessor:
@@ -56,7 +26,9 @@ class A3MProcessor:
             lengths, oligomeric_state = first_line.split("\t")
 
             chain_lengths = [int(x) for x in lengths[1:].split(",")]
-            chain_names = [f"10{x+1}" for x in range(len(oligomeric_state.split(",")))]
+            chain_names = [
+                f"10{x+1}" for x in range(len(oligomeric_state.split(",")))
+            ]
 
             # Calculate sequence ranges for each chain
             seq_ranges = {}
@@ -67,13 +39,13 @@ class A3MProcessor:
 
             return chain_names, seq_ranges
         else:
-            non_pairing = ">query\n" + "\n".join(self.a3m_content.split("\n")[1:])
+            non_pairing = ">query\n" + "\n".join(
+                self.a3m_content.split("\n")[1:]
+            )
             query_seq = self.a3m_content.split("\n")[1]
             pairing = f">query\n{query_seq}"
-            msa_path = Path(self.out_dir) / "msa"
-            msa_path.mkdir(exist_ok=True)
-            msa_path = msa_path / "0"
-            msa_path.mkdir(exist_ok=True)
+            msa_path = Path(self.out_dir)
+            msa_path.mkdir(exist_ok=True, parents=True)
             with open(msa_path / "non_pairing.a3m", "w") as f:
                 f.write(non_pairing)
 
@@ -186,99 +158,58 @@ class A3MProcessor:
                         f.write(f">{seq_name}\n{seq}\n")
 
 
-def run_colabfold_search(config: LocalColabFoldConfig) -> str:
-    """Run ColabFold search with given configuration."""
-    cmd = [config.colabsearch, config.query_fpath, config.db_dir, config.results_dir]
+def post_process(
+    fasta_path,
+    msa_dir,
+    result_dir,
+    filter=False,
+    filter_dir="filter",
+):
+    uniprot_ids = []
+    with open(fasta_path, "r") as f:
+        for line in f:
+            if line.startswith(">"):
+                uniprot_ids.append(line[1:].strip())
 
-    # Add optional parameters
-    if config.db1:
-        cmd.extend(["--db1", config.db1])
-    if config.db2:
-        cmd.extend(["--db2", config.db2])
-    if config.db3:
-        cmd.extend(["--db3", config.db3])
-    if config.mmseqs_path:
-        cmd.extend(["--mmseqs", config.mmseqs_path])
-    else:
-        cmd.extend(["--mmseqs", "mmseqs"])
-    if config.use_env:
-        cmd.extend(["--use-env", str(config.use_env)])
-    if config.filter:
-        cmd.extend(["--filter", str(config.filter)])
-    if config.db_load_mode:
-        cmd.extend(["--db-load-mode", str(config.db_load_mode)])
+    msa_dir = Path(msa_dir)
+    msa_files = list(msa_dir.glob("*.a3m"))
+    assert len(msa_files) == len(
+        uniprot_ids
+    ), "Number of MSA files does not match number of sequences in FASTA file."
+    for i in range(len(msa_files)):
+        assert (
+            msa_dir / f"{i}.a3m"
+        ).exists(), f"{msa_dir}/{i}.a3m does not exist."
 
-    cmd.extend(["--threads", str(os.cpu_count())])
+    source_dir = msa_dir
+    if filter:
+        filter_dir = Path(filter_dir)
+        filter_dir.mkdir(exist_ok=True, parents=True)
+        for i in range(len(msa_files)):
+            seq_entropy_filter(msa_dir / f"{i}.a3m", filter_dir / f"{i}.a3m")
+        source_dir = filter_dir
 
-    cmd = " ".join(cmd)
-    os.system(cmd)
-
-    # Return the first .a3m file found in results directory
-    result_files = list(Path(config.results_dir).glob("*.a3m"))
-    if not result_files:
-        raise FileNotFoundError(f"No .a3m files found in {config.results_dir}")
-    return result_files
+    result_dir = Path(result_dir)
+    for i, uniprot_id in enumerate(tqdm(uniprot_ids, ncols=80)):
+        msa_file = source_dir / f"{i}.a3m"
+        processor = A3MProcessor(msa_file, result_dir / uniprot_id)
+        if len(processor.chain_info) == 2:
+            processor.split_sequences()
 
 
-def parse_args():
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="ColabFold search and A3M processing tool",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+def main():
+    fasta_path = (
+        "/data/rerank/protenix/chembl_bdb/chembl_bdb_unique_sequences.fasta"
     )
+    msa_dir = "/data/rerank/protenix/chembl_bdb/msa/data"
+    result_dir = "/data/rerank/protenix/chembl_bdb/precomputed_msa"
+    # post_process(fasta_path, msa_dir, result_dir)
 
-    # Required arguments
-    parser.add_argument("query_fpath", help="Path to the query FASTA file")
-    parser.add_argument("db_dir", help="Directory containing the databases")
-    parser.add_argument("results_dir", help="Directory for storing results")
-
-    # Optional arguments
-    parser.add_argument(
-        "--colabsearch", help="Path to colabfold_search", default="colabfold_search"
+    filter_dir = "/data/rerank/protenix/chembl_bdb/msa_filtered"
+    post_process(
+        fasta_path, msa_dir, result_dir, filter=True, filter_dir=filter_dir
     )
-    parser.add_argument(
-        "--mmseqs_path", help="Path to MMseqs2 binary", default="mmseqs"
-    )
-    parser.add_argument("--db1", help="First database name", default="uniref30_2302_db")
-    parser.add_argument("--db2", help="Templates database")
-    parser.add_argument(
-        "--db3", help="Environmental database (default: colabfold_envdb_202108_db)"
-    )
-    parser.add_argument(
-        "--use_env", help="Use environment settings", type=int, default=1
-    )
-    parser.add_argument("--filter", help="Apply filtering", type=int, default=1)
-    parser.add_argument(
-        "--db_load_mode", help="Database load mode", type=int, default=0
-    )
-    parser.add_argument(
-        "--output_split", help="Directory for split A3M files", default=None
-    )
-    return parser.parse_args()
 
 
 if __name__ == "__main__":
-    args = parse_args()
-
-    # Create configuration from arguments
-    config = LocalColabFoldConfig(
-        colabsearch=args.colabsearch,
-        query_fpath=args.query_fpath,
-        db_dir=args.db_dir,
-        results_dir=args.results_dir,
-        mmseqs_path=args.mmseqs_path,
-        db1=args.db1,
-        db2=args.db2,
-        db3=args.db3,
-        use_env=args.use_env,
-        filter=args.filter,
-        db_load_mode=args.db_load_mode,
-    )
-
-    # Run search
-    results_a3m = run_colabfold_search(config)
-
-    for a3m_file in results_a3m:
-        processor = A3MProcessor(str(a3m_file), args.results_dir)
-        if len(processor.chain_info) == 2:
-            processor.split_sequences()
+    main()

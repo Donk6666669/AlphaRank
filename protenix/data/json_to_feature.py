@@ -457,40 +457,40 @@ class SampleDictToFeatures:
             contact_specifics, feature_type="continuous"
         )
 
-        logger.info(f"Loaded constraint feature: #contact:{len(contact_specifics)}")
+        # logger.info(f"Loaded constraint feature: #contact:{len(contact_specifics)}")
 
         # TODO remove debug logging
-        if constraint_dict["contact"] is not None:
-            ## logging contact feature
-            token_idx_1, token_idx_2 = torch.nonzero(
-                torch.triu(constraint_dict["contact"][..., 1]), as_tuple=True
-            )
-            # asym_id_1 = features_dict["asym_id"][token_idx_1]
-            # asym_id_2 = features_dict["asym_id"][token_idx_2]
+        # if constraint_dict["contact"] is not None:
+        #     ## logging contact feature
+        #     token_idx_1, token_idx_2 = torch.nonzero(
+        #         torch.triu(constraint_dict["contact"][..., 1]), as_tuple=True
+        #     )
+        #     # asym_id_1 = features_dict["asym_id"][token_idx_1]
+        #     # asym_id_2 = features_dict["asym_id"][token_idx_2]
 
-            atom1_index = token_array[token_idx_1].get_annotation("centre_atom_index")
-            atom2_index = token_array[token_idx_2].get_annotation("centre_atom_index")
+        #     atom1_index = token_array[token_idx_1].get_annotation("centre_atom_index")
+        #     atom2_index = token_array[token_idx_2].get_annotation("centre_atom_index")
 
-            res_id_1 = atom_array.res_id[atom1_index]
-            res_id_2 = atom_array.res_id[atom2_index]
+        #     res_id_1 = atom_array.res_id[atom1_index]
+        #     res_id_2 = atom_array.res_id[atom2_index]
 
-            res_name_1 = atom_array.res_name[atom1_index]
-            res_name_2 = atom_array.res_name[atom2_index]
+        #     res_name_1 = atom_array.res_name[atom1_index]
+        #     res_name_2 = atom_array.res_name[atom2_index]
 
-            atom_name_1 = atom_array.atom_name[atom1_index]
-            atom_name_2 = atom_array.atom_name[atom2_index]
+        #     atom_name_1 = atom_array.atom_name[atom1_index]
+        #     atom_name_2 = atom_array.atom_name[atom2_index]
 
-            chain_id_1 = atom_array.chain_id[atom1_index]
-            chain_id_2 = atom_array.chain_id[atom2_index]
+        #     chain_id_1 = atom_array.chain_id[atom1_index]
+        #     chain_id_2 = atom_array.chain_id[atom2_index]
 
-            distance = constraint_dict["contact"][token_idx_1, token_idx_2, 1]
+        #     distance = constraint_dict["contact"][token_idx_1, token_idx_2, 1]
 
-            contact_info = {
-                "chain_id": np.stack([chain_id_1, chain_id_2]).T.tolist(),
-                "res_name": np.stack([res_name_1, res_name_2]).T.tolist(),
-                "atom_name": np.stack([atom_name_1, atom_name_2]).T.tolist(),
-                "distance": distance.numpy(),
-            }
-            logger.info(f"loaded contact info:{contact_info}")
+        #     contact_info = {
+        #         "chain_id": np.stack([chain_id_1, chain_id_2]).T.tolist(),
+        #         "res_name": np.stack([res_name_1, res_name_2]).T.tolist(),
+        #         "atom_name": np.stack([atom_name_1, atom_name_2]).T.tolist(),
+        #         "distance": distance.numpy(),
+        #     }
+        #     logger.info(f"loaded contact info:{contact_info}")
 
         return constraint_dict
