@@ -100,14 +100,14 @@ ENV TERM xterm-256color
 
 
 # Install docker (to make docker in docker work)
-RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
-    | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
-    && echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
-    && apt-get update \
-    && apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
-    && rm -rf /var/lib/apt/lists/*
+#RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+#    | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
+#    && echo \
+#    "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+#    $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+#    && apt-get update \
+#    && apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
+#    && rm -rf /var/lib/apt/lists/*
 
 
 # Install Tmux
@@ -156,9 +156,10 @@ RUN cd /tmp \
 # you can find other versions and installation commands from:
 # https://pytorch.org/get-started/previous-versions/
 # https://github.com/pytorch/pytorch/wiki/PyTorch-Versions
-RUN pip install --no-cache-dir \
-    torch==2.3.1 \
-    --extra-index-url https://download.pytorch.org/whl/cu121
+# https://mirrors.aliyun.com/pytorch-wheels/cu121/
+# RUN pip install --no-cache-dir \
+#     torch==2.3.1 \
+#     --extra-index-url https://download.pytorch.org/whl/cu121
 
 
 # ==================================================
@@ -188,6 +189,14 @@ custom_channels:
   simpleitk: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
   nvidia: https://mirrors.sustech.edu.cn/anaconda-extra/cloud
 EOT
+
+
+RUN conda install -y \
+    pytorch==2.3.1 \
+    torchvision==0.18.1 \
+    torchaudio==2.3.1 \
+    pytorch-cuda=12.1 \
+    && conda clean -y --all
 
 
 # Update CMake
