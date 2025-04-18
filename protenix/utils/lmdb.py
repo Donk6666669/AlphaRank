@@ -60,6 +60,7 @@ class LMDBDataset:
                 )
                 break
             except Exception as e:
+                raise
                 time.sleep(self.RETRY_INTERVAL)
         else:
             raise Exception(
@@ -119,11 +120,32 @@ class LMDBDataset:
             f"Failed to write after {self.MAX_WRITE_RETRY_WHEN_LOCK} retries"
         )
 
-    def _set_values(self, db: str, data: Dict[str, Any]):
+    def _get_values(
+        self, db: str, keys: List[str], ori: bool = False
+    ) -> Dict[str, Any]:
+        """better for data construction with large data size."""
+        values = {}
+        for _ in range(self.MAX_WRITE_RETRY_WHEN_LOCK):
+            try:
+                with self.env.begin(db=self.db[db], write=False) as txn:
+                    for key in keys:
+                        value = txn.get(key.encode())
+                        values[key] = value
+                for key, value in values.items():
+                    if value is not None and self.compressed and not ori:
+                        values[key] = self.decompress(value)
+                return values
+            except Exception:
+                time.sleep(self.RETRY_INTERVAL)
+        raise Exception(
+            f"Failed to read after {self.MAX_WRITE_RETRY_WHEN_LOCK} retries"
+        )
+
+    def _set_values(self, db: str, data: Dict[str, Any], ori: bool = False):
         """better for data construction with large data size."""
         compressed = []
         for key, value in data.items():
-            if self.compressed:
+            if self.compressed and not ori:
                 value = self.compress(value)
             compressed.append((key, value))
 
@@ -133,7 +155,7 @@ class LMDBDataset:
                     for key, value in compressed:
                         txn.put(key.encode(), value)
                 return
-            except Exception as e:
+            except Exception:
                 time.sleep(self.RETRY_INTERVAL)
         raise Exception(
             f"Failed to write after {self.MAX_WRITE_RETRY_WHEN_LOCK} retries"
@@ -244,12 +266,24 @@ class LMDBDataset:
     def __setitem__(self, key: str, value: Dict[str, Any]) -> None:
         self._set_value(self.DATA_DB, key, pkl.dumps(value))
 
-    def write_data(self, data: Dict[str, Dict[str, Any]]) -> None:
+    def write_data(
+        self, data: Dict[str, Dict[str, Any]], ori: bool = False
+    ) -> None:
         """when writing large amount of data, use `write_data` to call
         _set_values instead of __setitem__"""
-        self._set_values(
-            self.DATA_DB, {key: pkl.dumps(value) for key, value in data.items()}
-        )
+        if not ori:
+            data = {key: pkl.dumps(value) for key, value in data.items()}
+        self._set_values(self.DATA_DB, data)
+
+    def get_data(
+        self, keys: List[str], ori: bool = False
+    ) -> Dict[str, Dict[str, Any]]:
+        """when reading large amount of data, use `get_data` to call
+        _get_values instead of __getitem__"""
+        data = self._get_values(self.DATA_DB, keys)
+        if not ori:
+            data = {key: pkl.loads(value) for key, value in data.items()}
+        return data
 
     def __contains__(self, key: str) -> bool:
         with self.env.begin(db=self.db[self.DATA_DB], write=False) as txn:

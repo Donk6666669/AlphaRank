@@ -1,122 +1,24 @@
 import os
 import argparse
 import json
-from enum import Enum
-from typing import Mapping, Any, Tuple
-from pathlib import Path
-from copy import deepcopy
+from typing import Mapping, Any
 from concurrent.futures import (
-    ThreadPoolExecutor,
     as_completed,
     ProcessPoolExecutor,
 )
 
 import torch
 from biotite.structure import AtomArray
-from ml_collections.config_dict import ConfigDict
 from tqdm import tqdm
 
-from protenix.data.data_pipeline import DataPipeline
 from protenix.data.json_to_feature import SampleDictToFeatures
-from protenix.data.esm_featurizer import ESMFeaturizer
-from protenix.data.msa_featurizer import InferenceMSAFeaturizer
+from protenix.data.screen_dataset import FeatureCompressor
 from protenix.data.utils import data_type_transform, make_dummy_feature
 from protenix.utils.torch_utils import dict_to_tensor
 from protenix.utils.lmdb import LMDBDataset
 from protenix.utils.logger import get_logger
 
 logger = get_logger(__name__)
-
-
-class FeatureCompressor:
-
-    TYPE = Enum("TYPE", "ALL_ZERO SPARSE")
-
-    def is_all_zero(self, tensor: torch.Tensor) -> bool:
-        return torch.all(tensor == 0)
-
-    def is_sparse(self, tensor: torch.Tensor) -> bool:
-        return torch.count_nonzero(tensor) < tensor.numel() / 2
-
-    def replace_zeros(self, tensor: torch.Tensor) -> Tuple[torch.Tensor, dict]:
-        return None, {
-            "type": self.TYPE.ALL_ZERO.name,
-            "size": tensor.size(),
-            "dtype": tensor.dtype,
-        }
-
-    def replace_sparse(self, tensor: torch.Tensor) -> Tuple[torch.Tensor, dict]:
-        return tensor.to_sparse(), {"type": self.TYPE.SPARSE.name}
-
-    def restore_zeros(self, tensor: torch.Tensor, record: dict) -> torch.Tensor:
-        return torch.zeros(record["size"], dtype=record["dtype"])
-
-    def restore_sparse(
-        self, tensor: torch.Tensor, record: dict
-    ) -> torch.Tensor:
-        return tensor.to_dense()
-
-    def _get_tensor(self, features_dict, key):
-        sub_keys = key.split(".")
-        tensor = features_dict
-        for key in sub_keys:
-            tensor = tensor[key]
-        return tensor
-
-    def _set_tensor(self, features_dict, key, value):
-        sub_keys = key.split(".")
-        tensor = features_dict
-        for key in sub_keys[:-1]:
-            tensor = tensor[key]
-        tensor[sub_keys[-1]] = value
-
-    def compress(self, features_dict: dict, replace: bool = False) -> dict:
-        if not replace:
-            target = deepcopy(features_dict)
-        else:
-            target = features_dict
-        keys = list(target.keys())
-        compress_records = {}
-        while len(keys) > 0:
-            key = keys.pop(0)
-            tensor = self._get_tensor(target, key)
-            if isinstance(tensor, torch.Tensor):
-                if self.is_all_zero(tensor):
-                    replace_tensor, record = self.replace_zeros(tensor)
-                    self._set_tensor(target, key, replace_tensor)
-                    compress_records[key] = record
-                elif self.is_sparse(tensor):
-                    replace_tensor, record = self.replace_sparse(tensor)
-                    self._set_tensor(target, key, replace_tensor)
-                    compress_records[key] = record
-            elif isinstance(tensor, dict):
-                for sub_key in tensor.keys():
-                    keys.append(f"{key}.{sub_key}")
-        target["__compress_records"] = compress_records
-        return target
-
-    def decompress(self, features_dict: dict, replace: bool = True) -> dict:
-        if "__compress_records" not in features_dict:
-            return features_dict
-        if not replace:
-            target = deepcopy(features_dict)
-        else:
-            target = features_dict
-        compress_records = target.pop("__compress_records")
-        for key, record in compress_records.items():
-            tensor = self._get_tensor(target, key)
-            compress_type = record["type"]
-            if type(compress_type) == str:
-                compress_type = self.TYPE[compress_type]
-            if compress_type == self.TYPE.ALL_ZERO:
-                self._set_tensor(
-                    target, key, self.restore_zeros(tensor, record)
-                )
-            elif compress_type == self.TYPE.SPARSE:
-                self._set_tensor(
-                    target, key, self.restore_sparse(tensor, record)
-                )
-        return target
 
 
 def process_sample(sample_dict: Mapping[str, Any]) -> tuple[dict, AtomArray]:
@@ -172,7 +74,7 @@ def process_sample(sample_dict: Mapping[str, Any]) -> tuple[dict, AtomArray]:
         return sample_dict["name"], features_dict, atom_array
     except Exception:
         logger.exception(f"Failed to process: {sample_dict}")
-        raise
+        return sample_dict["name"], None, None
 
 
 class ProtenixFeatureizer:
@@ -184,6 +86,7 @@ class ProtenixFeatureizer:
         write_batch_size: int = 1000,
         start: int = 0,
         end: int = None,
+        max_seq_len: int = 2000,
     ):
         self.json_path = json_path
         self.lmdb_dataset = LMDBDataset(lmdb_path, readonly=False)
@@ -205,22 +108,67 @@ class ProtenixFeatureizer:
         logger.info(
             f"Processing samples from {start} to {self.end} (total {len(self.samples)})"
         )
-        self.samples = self.samples[start : self.end]
-        print(f"Loaded {len(self.samples)} samples.")
+        self.max_seq_len = max_seq_len
+        self.samples = self.skip_samples(
+            self.samples[start : self.end]
+        )
+        logger.info(f"Start to process {len(self.samples)} samples.")
+
+    def skip_samples(self, samples):
+        remaining_samples = []
+        skip_samples = 0
+        skip_long_samples = 0
+        existing_samples = set(self.lmdb_dataset.get_split("feature"))
+        failed_samples = set(self.lmdb_dataset.get_split("feature_failed"))
+        for sample in samples:
+            feat_name = f"p_{sample['name']}"
+            if feat_name in failed_samples or feat_name in existing_samples:
+                skip_samples += 1
+            elif len(sample["sequences"][0]["proteinChain"]['sequence']) > self.max_seq_len:
+                skip_long_samples += 1
+            else:
+                remaining_samples.append(sample)
+
+        if skip_long_samples > 0:
+            logger.info(
+                f"Skipped {skip_long_samples} samples that are too long."
+            )
+        if skip_samples > 0:
+            logger.info(
+                f"Skipped {skip_samples} samples that already exist in LMDB."
+            )
+        return remaining_samples
 
     def run(self):
         batch_data = {}
+        failed_feat_keys = []
         for sample_dict in tqdm(self.samples, ncols=80):
             sample_name = sample_dict["name"]
             try:
                 _, features, atom_array = process_sample(sample_dict)
+                feat_key = f"p_{sample_name}"
+                if features is None:
+                    failed_feat_keys.append(feat_key)
+                    continue
 
-                batch_data[f"p_{sample_name}"] = {
+                batch_data[feat_key] = {
                     "feature_dict": features,
                     "atom_array": atom_array,
                 }
                 if len(batch_data) >= self.write_batch_size:
                     self.lmdb_dataset.write_data(batch_data)
+                    self.lmdb_dataset.set_split(
+                        "feature",
+                        sorted(batch_data.keys()),
+                        append=True,
+                        deduplicate=False,
+                    )
+                    self.lmdb_dataset.set_split(
+                        "feature_failed",
+                        failed_feat_keys,
+                        append=True,
+                        deduplicate=False,
+                    )
                     batch_data = {}
 
             except Exception:
@@ -229,9 +177,22 @@ class ProtenixFeatureizer:
         # Write any remaining data to LMDB
         if len(batch_data) > 0:
             self.lmdb_dataset.write_data(batch_data)
+            self.lmdb_dataset.set_split(
+                "feature",
+                sorted(batch_data.keys()),
+                append=True,
+                deduplicate=False,
+            )
+            self.lmdb_dataset.set_split(
+                "feature_failed",
+                failed_feat_keys,
+                append=True,
+                deduplicate=False,
+            )
 
     def parallel_run(self):
         batch_data = {}
+        failed_feat_keys = []
         total_samples = len(self.samples)
         pbar = tqdm(total=total_samples, ncols=80, desc="Processing samples")
 
@@ -246,8 +207,12 @@ class ProtenixFeatureizer:
                 for future in as_completed(futures):
                     try:
                         sample_name, features, atom_array = future.result()
+                        feat_key = f"p_{sample_name}"
+                        if features is None:
+                            failed_feat_keys.append(feat_key)
+                            continue
 
-                        batch_data[f"p_{sample_name}"] = {
+                        batch_data[feat_key] = {
                             "feature_dict": features,
                             "atom_array": atom_array,
                         }
@@ -262,6 +227,12 @@ class ProtenixFeatureizer:
                     self.lmdb_dataset.set_split(
                         "feature",
                         sorted(batch_data.keys()),
+                        append=True,
+                        deduplicate=False,
+                    )
+                    self.lmdb_dataset.set_split(
+                        "feature_failed",
+                        failed_feat_keys,
                         append=True,
                         deduplicate=False,
                     )

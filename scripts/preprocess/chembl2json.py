@@ -237,6 +237,35 @@ def main_process(
     )
 
 
+def filter_clean_keys():
+    ori_data = pd.read_csv(
+        "/data/rerank/protenix/chembl_bdb/chembl_bdb_merged_mask_updated.csv"
+    )
+    fasta_parser = FastaParser(
+        "/data/rerank/protenix/chembl_bdb/chembl_bdb_merged_sequences_checked.fasta"
+    )
+    filtered_ori_data = []
+    ori_data["Uniprot_ID"] = ori_data["Uniprot_ID"].fillna("")
+    for _, sample in tqdm(ori_data.iterrows(), ncols=80, total=len(ori_data)):
+        if (
+            sample["Uniprot_ID"] == ""
+            or fasta_parser.get_sequence(sample["Uniprot_ID"]) is None
+        ):
+            continue
+        filtered_ori_data.append(sample)
+    with open("/data/rerank/protenix/chembl_bdb/chembl_bdb_protenix.json") as f:
+        protenix_data = json.load(f)
+    assert len(filtered_ori_data) == len(protenix_data)
+    clean_keys = []
+    for idx, sample in enumerate(filtered_ori_data):
+        if sample["mask"] == 1:
+            clean_keys.append(protenix_data[idx]["name"])
+    lmdb = LMDBDataset(
+        "/data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb", readonly=False
+    )
+    lmdb.set_split("chembl_bdb_clean", clean_keys)
+
+
 if __name__ == "__main__":
     # Example usage
     csv_path = "/data/rerank/protenix/chembl_bdb/chembl_bdb_merged.csv"
@@ -250,3 +279,4 @@ if __name__ == "__main__":
     main_process(
         csv_path, fasta_path, output_protenix_json_path, output_lmdb, msa_dir
     )
+    filter_clean_keys()

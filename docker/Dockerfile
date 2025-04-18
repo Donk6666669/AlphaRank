@@ -196,6 +196,8 @@ RUN conda install -y \
     torchvision==0.18.1 \
     torchaudio==2.3.1 \
     pytorch-cuda=12.1 \
+    -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch \
+    -c https://mirrors.sustech.edu.cn/anaconda-extra/cloud/nvidia \
     && conda clean -y --all
 
 
@@ -221,6 +223,12 @@ RUN apt-get update && apt-get install -y --allow-downgrades --allow-change-held-
     && ln -s /opt/hhsuite/bin/* /usr/bin \
     && cd - \
     && rm -rf /tmp/hh-suite
+
+RUN cd /tmp \
+    && wget https://mmseqs.com/latest/mmseqs-linux-avx2.tar.gz \
+    && tar xvfz mmseqs-linux-avx2.tar.gz \
+    && cp -r mmseqs/bin/* /usr/local/bin/ \
+    && rm -rf /tmp/mmseqs
 
 # By default, install packages from `requirements.txt` with pip.
 COPY requirements.txt /tmp/requirements.txt

@@ -1,8 +1,3 @@
-python scripts/preprocess/json2feature.py \
-    --json_path /data/rerank/protenix/chembl_bdb/chembl_bdb_protenix.json \
-    --lmdb_path /data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb
-
-
  python scripts/colabfold_msa.py \
     /data_hdd/protein/rerank/protenix/chembl_bdb/chembl_bdb_unique_sequences.fasta \
     /data_ssd/protein/AIRFold/datasets_2024/database \
@@ -11,3 +6,77 @@ python scripts/preprocess/json2feature.py \
     --db3 colabfold_envdb_202108_db \
     --mmseqs /data_hdd/home/casp15/code/mmseqs_test//MMseqs2/build/bin/mmseqs \
     --db_load_mode 2
+
+
+# 13
+python scripts/preprocess/json2feature.py \
+    --json_path /data/rerank/protenix/chembl_bdb/chembl_bdb_protenix.json \
+    --lmdb_path /data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb \
+    --n_parallel 32 \
+    --start 0 \
+    --end 515638
+python scripts/preprocess/json2feature.py \
+    --json_path /data/rerank/protenix/chembl_bdb/chembl_bdb_protenix.json \
+    --lmdb_path /data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb \
+    --n_parallel 32 \
+    --start 0 \
+    --end 400000
+
+# 19
+python scripts/preprocess/json2feature.py \
+    --json_path /data/rerank/protenix/chembl_bdb/chembl_bdb_protenix.json \
+    --lmdb_path /data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb \
+    --n_parallel 32 \
+    --start 515638 \
+    --end 915638
+
+# 12
+python scripts/preprocess/json2feature.py \
+    --json_path /data/rerank/protenix/chembl_bdb/chembl_bdb_protenix.json \
+    --lmdb_path /data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb \
+    --n_parallel 32 \
+    --start 915638 \
+    --end 1315638
+python scripts/preprocess/json2feature.py \
+    --json_path /data/rerank/protenix/chembl_bdb/chembl_bdb_protenix.json \
+    --lmdb_path /data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb \
+    --n_parallel 32 \
+    --start 915638 \
+    --end 1215638
+
+# 46
+python scripts/preprocess/json2feature.py \
+    --json_path /data/rerank/protenix/chembl_bdb/chembl_bdb_protenix.json \
+    --lmdb_path /data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb \
+    --n_parallel 32 \
+    --start 1315638 \
+    --end 1715638
+
+# 47
+python scripts/preprocess/json2feature.py \
+    --json_path /data/rerank/protenix/chembl_bdb/chembl_bdb_protenix.json \
+    --lmdb_path /data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb \
+    --n_parallel 32 \
+    --start 1715638 \
+    --end 2115638
+
+python scripts/preprocess/json2feature.py \
+    --json_path /data/rerank/protenix/chembl_bdb/chembl_bdb_protenix.json \
+    --lmdb_path /data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb \
+    --n_parallel 32 \
+    --start 400000 \
+    --end 515638
+
+# 48
+python scripts/preprocess/json2feature.py \
+    --json_path /data/rerank/protenix/chembl_bdb/chembl_bdb_protenix.json \
+    --lmdb_path /data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb \
+    --n_parallel 32 \
+    --start 2115638 \
+    --end 2515638
+python scripts/preprocess/json2feature.py \
+    --json_path /data/rerank/protenix/chembl_bdb/chembl_bdb_protenix.json \
+    --lmdb_path /data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb \
+    --n_parallel 32 \
+    --start 1215638 \
+    --end 1315638
