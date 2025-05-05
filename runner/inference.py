@@ -30,12 +30,14 @@ from configs.configs_inference import inference_configs
 from protenix.config import parse_configs, parse_sys_args
 from protenix.data.compute_esm import ESM_CONFIG
 from protenix.data.infer_data_pipeline import get_inference_dataloader
-from protenix.model.protenix import Protenix
+from protenix.model.protenix_pair import Protenix
 from protenix.utils.distributed import DIST_WRAPPER
 from protenix.utils.seed import seed_everything
 from protenix.utils.torch_utils import to_device
 from protenix.web_service.dependency_url import URL
 from runner.dumper import DataDumper
+
+from protenix.utils.lmdb import LMDBDataset
 
 logger = logging.getLogger(__name__)
 
@@ -59,9 +61,13 @@ class InferenceRunner(object):
         )
         self.use_cuda = torch.cuda.device_count() > 0
         if self.use_cuda:
-            self.device = torch.device("cuda:{}".format(DIST_WRAPPER.local_rank))
+            self.device = torch.device(
+                "cuda:{}".format(DIST_WRAPPER.local_rank)
+            )
             os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-            all_gpu_ids = ",".join(str(x) for x in range(torch.cuda.device_count()))
+            all_gpu_ids = ",".join(
+                str(x) for x in range(torch.cuda.device_count())
+            )
             devices = os.getenv("CUDA_VISIBLE_DEVICES", all_gpu_ids)
             logging.info(
                 f"LOCAL_RANK: {DIST_WRAPPER.local_rank} - CUDA_VISIBLE_DEVICES: [{devices}]"
@@ -106,13 +112,17 @@ class InferenceRunner(object):
     def load_checkpoint(self) -> None:
         checkpoint_path = self.configs.load_checkpoint_path
         if not os.path.exists(checkpoint_path):
-            raise Exception(f"Given checkpoint path not exist [{checkpoint_path}]")
+            raise Exception(
+                f"Given checkpoint path not exist [{checkpoint_path}]"
+            )
         self.print(f"Loading from {checkpoint_path}")
         checkpoint = torch.load(checkpoint_path, self.device)
 
         sample_key = [k for k in checkpoint["model"].keys()][0]
         self.print(f"Sampled key: {sample_key}")
-        if sample_key.startswith("module."):  # DDP checkpoint has module. prefix
+        if sample_key.startswith(
+            "module."
+        ):  # DDP checkpoint has module. prefix
             checkpoint["model"] = {
                 k[len("module.") :]: v for k, v in checkpoint["model"].items()
             }
@@ -124,7 +134,9 @@ class InferenceRunner(object):
         self.print(f"Finish loading checkpoint.")
 
     def init_dumper(
-        self, need_atom_confidence: bool = False, sorted_by_ranking_score: bool = True
+        self,
+        need_atom_confidence: bool = False,
+        sorted_by_ranking_score: bool = True,
     ):
         self.dumper = DataDumper(
             base_dir=self.dump_dir,
@@ -134,7 +146,9 @@ class InferenceRunner(object):
 
     # Adapted from runner.train.Trainer.evaluate
     @torch.no_grad()
-    def predict(self, data: Mapping[str, Mapping[str, Any]]) -> dict[str, torch.Tensor]:
+    def predict(
+        self, data: Mapping[str, Mapping[str, Any]]
+    ) -> dict[str, torch.Tensor]:
         eval_precision = {
             "fp32": torch.float32,
             "bf16": torch.bfloat16,
@@ -166,14 +180,18 @@ class InferenceRunner(object):
         self.model.configs = new_configs
 
 
-def download_infercence_cache(configs: Any, model_version: str = "v0.2.0") -> None:
+def download_infercence_cache(
+    configs: Any, model_version: str = "v0.2.0"
+) -> None:
 
     for cache_name in ("ccd_components_file", "ccd_components_rdkit_mol_file"):
         cur_cache_fpath = configs["data"][cache_name]
         if not opexists(cur_cache_fpath):
             os.makedirs(os.path.dirname(cur_cache_fpath), exist_ok=True)
             tos_url = URL[cache_name]
-            assert os.path.basename(tos_url) == os.path.basename(cur_cache_fpath), (
+            assert os.path.basename(tos_url) == os.path.basename(
+                cur_cache_fpath
+            ), (
                 f"{cache_name} file name is incorrect, `{tos_url}` and "
                 f"`{cur_cache_fpath}`. Please check and try again."
             )
@@ -230,6 +248,11 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
             f.write(error_message)
         return
 
+    lmdb_dataset = LMDBDataset(configs["save_feat"]["lmdb"], readonly=False)
+    cache = {}
+    cache_size = 10
+    mode = "full"
+
     num_data = len(dataloader.dataset)
     for seed in configs.seeds:
         seed_everything(seed=seed, deterministic=configs.deterministic)
@@ -240,7 +263,9 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
 
                 if len(data_error_message) > 0:
                     logger.info(data_error_message)
-                    with open(opjoin(runner.error_dir, f"{sample_name}.txt"), "a") as f:
+                    with open(
+                        opjoin(runner.error_dir, f"{sample_name}.txt"), "a"
+                    ) as f:
                         f.write(data_error_message)
                     continue
 
@@ -251,31 +276,85 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                         f"N_atom {data['N_atom'].item()}, N_msa {data['N_msa'].item()}"
                     )
                 )
-                new_configs = update_inference_configs(configs, data["N_token"].item())
+                new_configs = update_inference_configs(
+                    configs, data["N_token"].item()
+                )
                 runner.update_model_configs(new_configs)
                 prediction = runner.predict(data)
-                runner.dumper.dump(
-                    dataset_name="",
-                    pdb_id=sample_name,
-                    seed=seed,
-                    pred_dict=prediction,
-                    atom_array=atom_array,
-                    entity_poly_type=data["entity_poly_type"],
-                )
+                s_inputs, s, z = prediction
+                s_inputs = s_inputs.cpu()
+                s = s.cpu()
+                z = z.cpu()
+                if len(data["len"]) == 2:
+                    len_p, len_m = data["len"]
+                    z_interact = (
+                        z[:len_p, -len_m:].clone(),
+                        z[-len_m:, :len_p].clone(),
+                    )
+                elif len(data["len"]) == 3:
+                    len_p, len_m1, len_m2 = data["len"]
+                    # z = [p+m1+m2, p+m1+m2]
+                    # interact = p_m1, p_m2, m1_m2, m1_p, m2_p, m2_m1
+                    z_interact = (
+                        z[:len_p, -len_m1 - len_m2 : -len_m2].clone(),  # p_m1
+                        z[:len_p, -len_m2:].clone(),  # p_m2
+                        z[-len_m1:-len_m2, -len_m2:].clone(),  # m1_m2
+                        z[-len_m1 - len_m2 : -len_m2, :len_p].clone(),  # m1_p
+                        z[-len_m2:, :len_p].clone(),  # m2_p
+                        z[-len_m2:, -len_m1:-len_m2].clone(),  # m2_m1
+                    )
+                else:
+                    raise ValueError(
+                        f"len(data['len']) should be 2 or 3, but got {len(data['len'])}"
+                    )
+
+                cache[sample_name] = (s_inputs, s, z_interact)
+                # runner.dumper.dump(
+                #     dataset_name="",
+                #     pdb_id=sample_name,
+                #     seed=seed,
+                #     pred_dict=prediction,
+                #     atom_array=atom_array,
+                #     entity_poly_type=data["entity_poly_type"],
+                # )
 
                 logger.info(
                     f"[Rank {DIST_WRAPPER.rank}] {data['sample_name']} succeeded.\n"
                     f"Results saved to {configs.dump_dir}"
                 )
                 torch.cuda.empty_cache()
+
+                if len(cache) >= cache_size:
+                    lmdb_dataset.write_data(cache)
+                    if len(data["len"]) == 2:
+                        split_key = f"{mode}_pair"
+                    elif len(data["len"]) == 3:
+                        split_key = f"{mode}_triplet"
+                    lmdb_dataset.set_split(
+                        split_key, list(cache.keys()), append=True
+                    )
+                    cache = {}
+
             except Exception as e:
                 error_message = f"[Rank {DIST_WRAPPER.rank}]{data['sample_name']} {e}:\n{traceback.format_exc()}"
                 logger.info(error_message)
                 # Save error info
-                with open(opjoin(runner.error_dir, f"{sample_name}.txt"), "a") as f:
+                with open(
+                    opjoin(runner.error_dir, f"{sample_name}.txt"), "a"
+                ) as f:
                     f.write(error_message)
                 if hasattr(torch.cuda, "empty_cache"):
                     torch.cuda.empty_cache()
+
+    if len(cache) > 0:
+        lmdb_dataset.write_data(cache)
+        if len(data["len"]) == 2:
+            split_key = f"{mode}_pair"
+        elif len(data["len"]) == 3:
+            split_key = f"{mode}_triplet"
+        lmdb_dataset.set_split(
+            split_key, list(cache.keys()), append=True
+        )
 
 
 def main(configs: Any) -> None:

@@ -183,6 +183,9 @@ def inference_jsons(
     use_msa_server: bool = False,
     seeds: tuple = (101,),
     use_esm: bool = False,
+    lmdb: Optional[str] = None,
+    start: Optional[int] = 0,
+    end: Optional[int] = None,
 ) -> None:
     """
     infer_json: json file or directory, will run infer with these jsons
@@ -222,8 +225,14 @@ def inference_jsons(
             )
             if use_esm:
                 configs.use_msa = use_msa_server
+            configs["save_feat"] = {
+                "lmdb": lmdb,
+                "start": start,
+                "end": end,
+            }
             infer_predict(runner, configs)
         except Exception as exc:
+            raise
             infer_errors[infer_json] = str(exc)
     if len(infer_errors) > 0:
         logger.warning(f"run inference failed: {infer_errors}")
@@ -285,7 +294,10 @@ def protenix_cli():
     "--use_msa_server", is_flag=True, help="use msa result for inference or not"
 )
 @click.option("--use_esm", is_flag=True, help="run inference esm or not")
-def predict(input, out_dir, seeds, use_msa_server, use_esm):
+@click.option("--lmdb", type=str, help="lmdb file for inference")
+@click.option("--start", type=int, default=0, help="start index for inference")
+@click.option("--end", type=int, default=None, help="end index for inference")
+def predict(input, out_dir, seeds, use_msa_server, use_esm, lmdb, start, end):
     """
     predict: Run predictions with protenix.
     :param input, out_dir, use_msa_server, use_esm
@@ -300,7 +312,7 @@ def predict(input, out_dir, seeds, use_msa_server, use_esm):
             f"use_msa_server and use_esm can not be `False` simultaneously."
         )
     seeds = list(map(int, seeds.split(",")))
-    inference_jsons(input, out_dir, use_msa_server, seeds=seeds, use_esm=use_esm)
+    inference_jsons(input, out_dir, use_msa_server, seeds=seeds, use_esm=use_esm, lmdb=lmdb, start=start, end=end)
 
 
 @click.command()

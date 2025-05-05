@@ -32,6 +32,7 @@ from protenix.data.msa_featurizer import InferenceMSAFeaturizer
 from protenix.data.utils import data_type_transform, make_dummy_feature
 from protenix.utils.distributed import DIST_WRAPPER
 from protenix.utils.torch_utils import dict_to_tensor
+from protenix.utils.lmdb import LMDBDataset
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,9 @@ def get_inference_dataloader(configs: Any) -> DataLoader:
         cfg_esm=configs.data.esm,
         use_msa=configs.use_msa,
         use_esm=configs.use_esm,
+        lmdb=configs["save_feat"]["lmdb"],
+        start=configs["save_feat"]["start"],
+        end=configs["save_feat"]["end"],
     )
     sampler = DistributedSampler(
         dataset=inference_dataset,
@@ -79,6 +83,9 @@ class InferenceDataset(Dataset):
         cfg_esm: ConfigDict,
         use_msa: bool = True,
         use_esm: bool = True,
+        lmdb=None,
+        start=0,
+        end=None,
     ) -> None:
 
         self.input_json_path = input_json_path
@@ -88,7 +95,29 @@ class InferenceDataset(Dataset):
         self.cfg_esm = cfg_esm
         assert use_msa or use_esm, "Neither MSA feautre nor ESM feature is used."
         with open(self.input_json_path, "r") as f:
-            self.inputs = json.load(f)
+            inputs = json.load(f)
+        if end is None:
+            end = len(inputs)
+        inputs = inputs[start:end]
+        
+        self.inputs = []
+        if lmdb is not None and os.path.exists(lmdb):
+            lmdb_dataset = LMDBDataset(lmdb, readonly=True)
+            for input_ in inputs:
+                if input_["name"] not in lmdb_dataset:
+                    self.inputs.append(input_)
+        else:
+            self.inputs = inputs
+
+        if len(inputs) != self.inputs:
+            n_already_in_lmdb = len(inputs) - len(self.inputs)
+            logger.info(
+                f"Already in LMDB: {n_already_in_lmdb} samples, "
+                f"skipping them in inference."
+            )
+        logger.info(
+            f"Total samples in inference: {len(self.inputs)} samples."
+        )
 
         # If ESM embedding doesn't exist, pre-compute them
         if use_esm:
@@ -262,4 +291,5 @@ class InferenceDataset(Dataset):
             error_message = f"{e}:\n{traceback.format_exc()}"
         data["sample_name"] = single_sample_dict["name"]
         data["sample_index"] = index
+        data["len"] = single_sample_dict["len"]
         return data, atom_array, error_message
