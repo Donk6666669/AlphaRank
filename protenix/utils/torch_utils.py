@@ -25,14 +25,20 @@ def to_device(obj, device):
     """Move tensor or dict of tensors to device"""
     if isinstance(obj, dict):
         for k, v in obj.items():
-            if isinstance(v, dict):
-                to_device(v, device)
-            elif isinstance(v, torch.Tensor):
+            if isinstance(v, torch.Tensor):
                 obj[k] = obj[k].to(device)
+            else:
+                to_device(v, device)
+    elif isinstance(obj, list):
+        for i in range(len(obj)):
+            if isinstance(obj[i], torch.Tensor):
+                obj[i] = obj[i].to(device)
+            else:
+                to_device(obj[i], device)
     elif isinstance(obj, torch.Tensor):
         obj = obj.to(device)
     else:
-        raise Exception(f"type {type(obj)} not supported")
+        return obj
     return obj
 
 

@@ -42,13 +42,14 @@ from .modules.embedders import (
 from .modules.head import DistogramHead
 from .modules.pairformer import MSAModule, PairformerStack, TemplateEmbedder
 from .modules.primitives import LinearNoBias
+from .rank_model import CrossIndependentRanker
 
 logger = get_logger(__name__)
 
 
-class ProtenisSimple(nn.Module):
+class ProtenisP(nn.Module):
     """
-    Implements Algorithm 1 [Main Inference/Train Loop] in AF3
+    Protenix with only pairformer output.
     """
 
     def __init__(self, configs) -> None:
@@ -66,12 +67,15 @@ class ProtenisSimple(nn.Module):
 
         # Model
         self.input_embedder = InputFeatureEmbedder(
-            **configs.model.input_embedder, esm_configs=configs.data.get("esm", {})
+            **configs.model.input_embedder,
+            esm_configs=configs.data.get("esm", {}),
         )
         self.relative_position_encoding = RelativePositionEncoding(
             **configs.model.relative_position_encoding
         )
-        self.template_embedder = TemplateEmbedder(**configs.model.template_embedder)
+        self.template_embedder = TemplateEmbedder(
+            **configs.model.template_embedder
+        )
         self.msa_module = MSAModule(
             **configs.model.msa_module,
             msa_configs=configs.data.get("msa", {}),
@@ -162,7 +166,9 @@ class ProtenisSimple(nn.Module):
             )
             z_init += z_constraint
         else:
-            z_init = z_init + self.relative_position_encoding(input_feature_dict)
+            z_init = z_init + self.relative_position_encoding(
+                input_feature_dict
+            )
             z_init = z_init + self.linear_no_bias_token_bond(
                 input_feature_dict["token_bonds"].unsqueeze(dim=-1)
             )
@@ -178,7 +184,9 @@ class ProtenisSimple(nn.Module):
                 and (not self.train_confidence_only)
                 and cycle_no == (N_cycle - 1)
             ):
-                z = z_init + self.linear_no_bias_z_cycle(self.layernorm_z_cycle(z))
+                z = z_init + self.linear_no_bias_z_cycle(
+                    self.layernorm_z_cycle(z)
+                )
                 if inplace_safe:
                     if self.template_embedder.n_blocks > 0:
                         z += self.template_embedder(
@@ -307,8 +315,11 @@ class ProtenisSimple(nn.Module):
     ) -> tuple[dict[str, torch.Tensor], dict[str, Any], dict[str, Any]]:
         assert mode in ["inference"]
         inplace_safe = not (self.training or torch.is_grad_enabled())
-        chunk_size = self.configs.infer_setting.chunk_size if inplace_safe else None
+        chunk_size = (
+            self.configs.infer_setting.chunk_size if inplace_safe else None
+        )
 
+        pred_dict = {}
         log_dict = {}
         if mode == "inference":
             pred_dict, time_tracker = self.main_inference_loop(
@@ -319,5 +330,78 @@ class ProtenisSimple(nn.Module):
                 chunk_size=chunk_size,
             )
             log_dict.update({"time": time_tracker})
-        
+
         return pred_dict, log_dict
+
+
+class ProtenisPCrossIndependentRanker(nn.Module):
+    def __init__(self, configs, rank_model: CrossIndependentRanker):
+        super().__init__()
+        self.configs = configs
+        self.encoder = ProtenisP(configs)
+        for param in self.encoder.parameters():
+            param.requires_grad = False
+
+        self.rank_model = rank_model
+
+    def agg_feature(
+        self, feature_dict: dict[str, Any], entity_id: torch.Tensor
+    ) -> dict[str, Any]:
+        s_inputs = feature_dict["s_inputs"]  # [N_token, 449]
+        s = feature_dict["s"]  # [N_token, 384]
+        z = feature_dict["z"]  # [N_token, N_token, 128]
+
+        pocket_mask = entity_id == 0
+        mol_mask = entity_id == 1
+        return self.rank_model(
+            s_inputs=s_inputs,
+            s=s,
+            z=z,
+            pocket_mask=pocket_mask,
+            mol_mask=mol_mask,
+        )
+
+    def main_training_loop(self, input_feature_dicts: list[dict]):
+        log_dict = {}
+        ranker_inputs = []
+        self.encoder.eval()
+        with torch.no_grad():
+            for input_feature_dict in input_feature_dicts:
+                predict_dict, model_log_dict = self.encoder(
+                    input_feature_dict=input_feature_dict,
+                    mode="inference",
+                )
+                log_dict.update(model_log_dict)
+                ranker_inputs.append((predict_dict, input_feature_dict["entity_id"]))
+
+        logits = [
+            self.agg_feature(feature, entity_id)
+            for feature, entity_id in ranker_inputs
+        ]
+        predict_dict = {
+            "logits": logits,
+        }
+        return predict_dict, log_dict
+
+    def forward(
+        self,
+        input_feature_dicts: list[dict],
+        mode: str = "inference",
+        **kwargs,
+    ):
+        assert mode in ["inference", "training"]
+        if mode == "inference":
+            pred_dict, log_dict = self.main_training_loop(
+                input_feature_dicts=input_feature_dicts
+            )
+        elif mode == "training":
+            pred_dict, log_dict = self.main_training_loop(
+                input_feature_dicts=input_feature_dicts
+            )
+        else:
+            raise ValueError(f"Unknown mode: {mode}")
+        return pred_dict, log_dict
+
+
+class ProtenisPTripletRelativeRanker(nn.Module):
+    pass

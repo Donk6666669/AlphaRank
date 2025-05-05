@@ -5,6 +5,7 @@ from tqdm import tqdm
 from pathlib import Path
 
 from protenix.utils.lmdb import LMDBDataset
+from rdkit import Chem
 
 
 class FastaParser:
@@ -184,7 +185,19 @@ def main_process(
                     "units": row["Standard_Units"],
                 },
                 "assay_group": group_name,
+                "len": {
+                    "protein": len(sequence),
+                    "ligand": 0,
+                }
             }
+            try:
+                mol_len = 0
+                mol = Chem.MolFromSmiles(row["SMILES"])
+                if mol is not None:
+                    mol_len = mol.GetNumAtoms()
+                entry["len"]["ligand"] = mol_len
+            except Exception:
+                pass
             processed_data[entry_name] = entry
             keys.append(entry_name)
             if len(processed_data) % 10000 == 0:

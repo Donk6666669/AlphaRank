@@ -120,6 +120,12 @@ class FeatureCompressor:
                 )
         return target
 
+        
+def standardize_activity_value(value):
+    return - torch.log10(
+        torch.tensor(value * 1e-9, dtype=torch.float32)
+    ) # Convert nM to M and calculate - log10(value_in_M)
+
 
 class ComplexFeatureDataset(Dataset):
     def __init__(
@@ -207,4 +213,103 @@ class ComplexFeatureDataset(Dataset):
         meta = self.lmdb[key]
         feature_dict, _, _ = self.get_feature_dict(key, meta)
         sample["input_feature_dict"] = feature_dict
+        sample["activity"] = standardize_activity_value(
+            meta["activity"]["value"]
+        )
         return sample
+
+
+def get_discrepant_pairs(assay_records, threshold=1.0):
+    # Extract data to numpy arrays
+    assay_records = sorted(assay_records, key=lambda x: x["activity"]["value"])
+    names = [r["name"] for r in assay_records]
+    relations = np.array([r["activity"]["relation"] for r in assay_records])
+    values = np.array([r["activity"]["value"] for r in assay_records])
+    n = len(names)
+
+    # Convert nM to M and calculate 9 - log10(value_in_M)
+    value_M = values * 1e-9  # All units are nM per user confirmation
+    vals = -np.log10(value_M)
+
+    # Calculate interval bounds for each record
+    lower = np.full(n, -np.inf)
+    upper = np.full(n, np.inf)
+
+    # Handle equality cases
+    eq_mask = relations == "="
+    lower[eq_mask] = upper[eq_mask] = value_M[eq_mask]
+
+    # Handle greater-than cases
+    gt_mask = relations == ">"
+    lower[gt_mask] = value_M[gt_mask]
+
+    # Handle less-than cases
+    lt_mask = relations == "<"
+    upper[lt_mask] = value_M[lt_mask]
+
+    # Vectorized calculations for all pairs
+    i, j = np.triu_indices(n, 1)  # Get upper triangle indices (i < j)
+
+    # Calculate absolute differences between all pairs
+    delta = np.abs(vals[i] - vals[j])
+
+    # Check interval overlaps using broadcasting
+    no_overlap = (upper[i] < lower[j]) | (upper[j] < lower[i])
+
+    # Combine conditions
+    valid_mask = (delta >= threshold) & no_overlap
+
+    # Generate sorted pairs
+    pairs = [tuple([names[i[k]], names[j[k]]]) for k in np.where(valid_mask)[0]]
+
+    return pairs
+
+
+class ComplexFeatureRandomPairDataset(ComplexFeatureDataset):
+    """samples per epoch = one random pair per assay"""
+
+    def __init__(
+        self,
+        lmdb_path: str,
+        pair_split: str = "assay_pairs",
+        use_msa: bool = True,
+        msa_split: str = "msa",
+        use_esm: bool = False,
+        esm_split: str = "esm",
+        random_seed: int = 0,
+    ):
+        super().__init__(
+            lmdb_path=lmdb_path,
+            use_msa=use_msa,
+            msa_split=msa_split,
+            use_esm=use_esm,
+            esm_split=esm_split,
+        )
+        self.assay_pairs = self.lmdb[pair_split]
+        self.assay_pair_keys = sorted(self.assay_pairs.keys())
+        self.random_seed = random_seed
+
+    def __len__(self):
+        return len(self.assay_pairs)
+
+    def __getitem__(self, index):
+        pairs = self.assay_pairs[self.assay_pair_keys[index]]
+        key_a, key_b = random.choice(pairs)
+        meta_a, meta_b = self.lmdb[key_a], self.lmdb[key_b]
+        feature_dict_a, atom_array_a, token_array_a = self.get_feature_dict(
+            key_a, meta_a
+        )
+        feature_dict_b, atom_array_b, token_array_b = self.get_feature_dict(
+            key_b, meta_b
+        )
+        pair1_label = standardize_activity_value(meta_a["activity"]["value"])
+        pair2_label = standardize_activity_value(meta_b["activity"]["value"])
+        result = {
+            "input_feature_dicts": [
+                feature_dict_a,
+                feature_dict_b,
+            ],
+            "activity": torch.tensor([pair1_label, pair2_label]),
+            "pair_label": torch.tensor([pair2_label - pair1_label]),
+        }
+        return result

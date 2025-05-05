@@ -169,7 +169,11 @@ def post_process(
     with open(fasta_path, "r") as f:
         for line in f:
             if line.startswith(">"):
-                uniprot_ids.append(line[1:].strip())
+                if "|" in line:
+                    uniprot_id = line.split("|")[1]
+                    uniprot_ids.append(uniprot_id)
+                else:
+                    uniprot_ids.append(line[1:].strip())
 
     msa_dir = Path(msa_dir)
     msa_files = list(msa_dir.glob("*.a3m"))
@@ -198,14 +202,28 @@ def post_process(
 
 
 def main():
+    # chembl_bdb
+    # fasta_path = (
+    #     "/data/rerank/protenix/chembl_bdb/chembl_bdb_unique_sequences.fasta"
+    # )
+    # msa_dir = "/data/rerank/protenix/chembl_bdb/msa/data"
+    # result_dir = "/data/rerank/protenix/chembl_bdb/precomputed_msa"
+    # # post_process(fasta_path, msa_dir, result_dir)
+
+    # filter_dir = "/data/rerank/protenix/chembl_bdb/msa_filtered"
+    # post_process(
+    #     fasta_path, msa_dir, result_dir, filter=True, filter_dir=filter_dir
+    # )
+    
+    # benchmark
     fasta_path = (
-        "/data/rerank/protenix/chembl_bdb/chembl_bdb_unique_sequences.fasta"
+        "/data/rerank/protenix/chembl_bdb/benchmark_msa/dude_litpcba_fep.fasta"
     )
-    msa_dir = "/data/rerank/protenix/chembl_bdb/msa/data"
-    result_dir = "/data/rerank/protenix/chembl_bdb/precomputed_msa"
+    msa_dir = "/data/rerank/protenix/chembl_bdb/benchmark_msa/msa"
+    result_dir = "/data/rerank/protenix/chembl_bdb/benchmark_msa/precomputed_msa"
     # post_process(fasta_path, msa_dir, result_dir)
 
-    filter_dir = "/data/rerank/protenix/chembl_bdb/msa_filtered"
+    filter_dir = "/data/rerank/protenix/chembl_bdb/benchmark_msa/msa_filtered"
     post_process(
         fasta_path, msa_dir, result_dir, filter=True, filter_dir=filter_dir
     )

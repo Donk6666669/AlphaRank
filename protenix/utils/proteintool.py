@@ -153,7 +153,7 @@ def mmseqs2_cluster_fasta(fasta_file, identity=30, output_prefix=None):
 
     with TemporaryDirectory() as tmpdir:
         if output_prefix is None:
-            output_dir = f"{fasta_file.replace('.fasta', '')}.cluster/"
+            output_dir = f"{str(fasta_file).replace('.fasta', '')}.cluster/"
             Path(output_dir).mkdir(parents=True, exist_ok=True)
             output_prefix = f"{output_dir}/id{identity}"
         cmd = (
