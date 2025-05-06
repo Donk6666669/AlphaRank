@@ -34,7 +34,11 @@ from protenix.data.json_maker import cif_to_input_json
 from protenix.data.json_parser import lig_file_to_atom_info
 from protenix.data.utils import pdb_to_cif
 from protenix.utils.logger import get_logger
-from runner.inference import InferenceRunner, download_infercence_cache, infer_predict
+from runner.inference import (
+    InferenceRunner,
+    download_infercence_cache,
+    infer_predict,
+)
 from runner.msa_search import msa_search, update_infer_json
 
 logger = get_logger(__name__)
@@ -53,7 +57,9 @@ def init_logging():
 def generate_infer_jsons(protein_msa_res: dict, ligand_file: str) -> List[str]:
     protein_chains = []
     if len(protein_msa_res) <= 0:
-        raise RuntimeError(f"invalid `protein_msa_res` data in {protein_msa_res}")
+        raise RuntimeError(
+            f"invalid `protein_msa_res` data in {protein_msa_res}"
+        )
     for key, value in protein_msa_res.items():
         protein_chain = {}
         protein_chain["proteinChain"] = {}
@@ -81,9 +87,7 @@ def generate_infer_jsons(protein_msa_res: dict, ligand_file: str) -> List[str]:
     current_local_dir = (
         f"/tmp/{time.strftime('%Y-%m-%d', time.localtime())}/{tmp_json_name}"
     )
-    current_local_json_dir = (
-        f"/tmp/{time.strftime('%Y-%m-%d', time.localtime())}/{tmp_json_name}_jsons"
-    )
+    current_local_json_dir = f"/tmp/{time.strftime('%Y-%m-%d', time.localtime())}/{tmp_json_name}_jsons"
     os.makedirs(current_local_dir, exist_ok=True)
     os.makedirs(current_local_json_dir, exist_ok=True)
     for li_file in ligand_files:
@@ -97,7 +101,8 @@ def generate_infer_jsons(protein_msa_res: dict, ligand_file: str) -> List[str]:
                     sdf_ligand_files.append([li_file])
                 else:
                     sdf_basename = os.path.join(
-                        current_local_dir, os.path.basename(li_file).split(".")[0]
+                        current_local_dir,
+                        os.path.basename(li_file).split(".")[0],
                     )
                     li_files = []
                     for idx, mol in enumerate(suppl):
@@ -112,7 +117,9 @@ def generate_infer_jsons(protein_msa_res: dict, ligand_file: str) -> List[str]:
                 lig_file_to_atom_info(li_file)
                 sdf_ligand_files.append(li_file)
         except Exception as exc:
-            logging.info(f" lig_file_to_atom_info failed with error info: {exc}")
+            logging.info(
+                f" lig_file_to_atom_info failed with error info: {exc}"
+            )
             invalid_ligand_files.append(li_file)
     logger.info(f"the json to infer will be save to {current_local_json_dir}")
     infer_json_files = []
@@ -186,6 +193,7 @@ def inference_jsons(
     lmdb: Optional[str] = None,
     start: Optional[int] = 0,
     end: Optional[int] = None,
+    reduce: Optional[bool] = False,
 ) -> None:
     """
     infer_json: json file or directory, will run infer with these jsons
@@ -229,10 +237,10 @@ def inference_jsons(
                 "lmdb": lmdb,
                 "start": start,
                 "end": end,
+                "mode": "reduced" if reduce else "full",
             }
             infer_predict(runner, configs)
         except Exception as exc:
-            raise
             infer_errors[infer_json] = str(exc)
     if len(infer_errors) > 0:
         logger.warning(f"run inference failed: {infer_errors}")
@@ -286,9 +294,14 @@ def protenix_cli():
 
 @click.command()
 @click.option("--input", type=str, help="json files or dir for inference")
-@click.option("--out_dir", default="./output", type=str, help="infer result dir")
 @click.option(
-    "--seeds", type=str, default="101", help="the inference seed, split by comma"
+    "--out_dir", default="./output", type=str, help="infer result dir"
+)
+@click.option(
+    "--seeds",
+    type=str,
+    default="101",
+    help="the inference seed, split by comma",
 )
 @click.option(
     "--use_msa_server", is_flag=True, help="use msa result for inference or not"
@@ -297,7 +310,8 @@ def protenix_cli():
 @click.option("--lmdb", type=str, help="lmdb file for inference")
 @click.option("--start", type=int, default=0, help="start index for inference")
 @click.option("--end", type=int, default=None, help="end index for inference")
-def predict(input, out_dir, seeds, use_msa_server, use_esm, lmdb, start, end):
+@click.option("--reduce", is_flag=True, help="save reduced feature or not")
+def predict(input, out_dir, seeds, use_msa_server, use_esm, lmdb, start, end, reduce):
     """
     predict: Run predictions with protenix.
     :param input, out_dir, use_msa_server, use_esm
@@ -312,14 +326,26 @@ def predict(input, out_dir, seeds, use_msa_server, use_esm, lmdb, start, end):
             f"use_msa_server and use_esm can not be `False` simultaneously."
         )
     seeds = list(map(int, seeds.split(",")))
-    inference_jsons(input, out_dir, use_msa_server, seeds=seeds, use_esm=use_esm, lmdb=lmdb, start=start, end=end)
+    inference_jsons(
+        input,
+        out_dir,
+        use_msa_server,
+        seeds=seeds,
+        use_esm=use_esm,
+        lmdb=lmdb,
+        start=start,
+        end=end,
+        reduce=reduce,
+    )
 
 
 @click.command()
 @click.option(
     "--input", type=str, help="pdb or cif files to generate jsons for inference"
 )
-@click.option("--out_dir", type=str, default="./output", help="dir to save json files")
+@click.option(
+    "--out_dir", type=str, default="./output", help="dir to save json files"
+)
 @click.option(
     "--altloc",
     default="first",
@@ -357,10 +383,14 @@ def tojson(input, out_dir="./output", altloc="first", assembly_id=None):
         raise RuntimeError(f"can not read a special file: {input}")
 
     input_files = [
-        file for file in input_files if file.endswith(".pdb") or file.endswith(".cif")
+        file
+        for file in input_files
+        if file.endswith(".pdb") or file.endswith(".cif")
     ]
     if len(input_files) == 0:
-        raise RuntimeError(f"can not read a valid `pdb` or `cif` file from {input}")
+        raise RuntimeError(
+            f"can not read a valid `pdb` or `cif` file from {input}"
+        )
     logger.info(
         f"will tojson jsons for {len(input_files)} input files with `pdb` or `cif` format."
     )
@@ -369,7 +399,9 @@ def tojson(input, out_dir="./output", altloc="first", assembly_id=None):
     for input_file in input_files:
         stem, _ = os.path.splitext(os.path.basename(input_file))
         pdb_name = stem[:20]
-        output_json = os.path.join(out_dir, f"{pdb_name}-{uuid.uuid4().hex}.json")
+        output_json = os.path.join(
+            out_dir, f"{pdb_name}-{uuid.uuid4().hex}.json"
+        )
         if input_file.endswith(".pdb"):
             with tempfile.NamedTemporaryFile(suffix=".cif") as tmp:
                 tmp_cif_file = tmp.name
@@ -389,17 +421,25 @@ def tojson(input, out_dir="./output", altloc="first", assembly_id=None):
                 output_json=output_json,
             )
         else:
-            raise RuntimeError(f"can not read a special ligand_file: {input_file}")
+            raise RuntimeError(
+                f"can not read a special ligand_file: {input_file}"
+            )
         output_jsons.append(output_json)
-    logger.info(f"{len(output_jsons)} generated jsons have been save to {out_dir}.")
+    logger.info(
+        f"{len(output_jsons)} generated jsons have been save to {out_dir}."
+    )
     return output_jsons
 
 
 @click.command()
 @click.option(
-    "--input", type=str, help="file to do msa search, support `json` or `fasta` format"
+    "--input",
+    type=str,
+    help="file to do msa search, support `json` or `fasta` format",
 )
-@click.option("--out_dir", type=str, default="./output", help="dir to save msa results")
+@click.option(
+    "--out_dir", type=str, default="./output", help="dir to save msa results"
+)
 def msa(input, out_dir) -> Union[str, dict]:
     """
     msa: do msa search by mmseqs. If input is in `fasta`, it should all be proteinChain.
@@ -426,7 +466,9 @@ def msa(input, out_dir) -> Union[str, dict]:
         )
         return fasta_msa_res
     else:
-        raise RuntimeError(f"only support `json` or `fasta` format, but got : {input}")
+        raise RuntimeError(
+            f"only support `json` or `fasta` format, but got : {input}"
+        )
 
 
 protenix_cli.add_command(predict)

@@ -506,7 +506,7 @@ def smiles_to_atom_info(smiles: str) -> dict:
         future = executor.submit(AllChem.EmbedMolecule, mol)
 
         try:
-            ret_code = future.result(timeout=90)
+            ret_code = future.result(timeout=180)
         except concurrent.futures.TimeoutError as exc:
             raise TimeoutError(
                 'Conformer generation timed out.  \

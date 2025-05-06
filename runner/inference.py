@@ -251,7 +251,7 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
     lmdb_dataset = LMDBDataset(configs["save_feat"]["lmdb"], readonly=False)
     cache = {}
     cache_size = 10
-    mode = "full"
+    mode = configs["save_feat"]["mode"]
 
     num_data = len(dataloader.dataset)
     for seed in configs.seeds:
@@ -264,7 +264,11 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                 if len(data_error_message) > 0:
                     logger.info(data_error_message)
                     with open(
-                        opjoin(runner.error_dir, f"{sample_name}.txt"), "a"
+                        opjoin(
+                            runner.error_dir,
+                            f"{sample_name.replace('/', '_')}.txt",
+                        ),
+                        "a+",
                     ) as f:
                         f.write(data_error_message)
                     continue
@@ -282,14 +286,11 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                 runner.update_model_configs(new_configs)
                 prediction = runner.predict(data)
                 s_inputs, s, z = prediction
-                s_inputs = s_inputs.cpu()
-                s = s.cpu()
-                z = z.cpu()
                 if len(data["len"]) == 2:
                     len_p, len_m = data["len"]
                     z_interact = (
-                        z[:len_p, -len_m:].clone(),
-                        z[-len_m:, :len_p].clone(),
+                        z[:len_p, -len_m:].clone(),  # p_m
+                        z[-len_m:, :len_p].clone(),  # m_p
                     )
                 elif len(data["len"]) == 3:
                     len_p, len_m1, len_m2 = data["len"]
@@ -308,7 +309,51 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                         f"len(data['len']) should be 2 or 3, but got {len(data['len'])}"
                     )
 
-                cache[sample_name] = (s_inputs, s, z_interact)
+                if mode == "full":
+                    cache[sample_name] = (
+                        s_inputs.cpu(),
+                        s.cpu(),
+                        tuple([item.cpu() for item in z_interact]),
+                    )
+                elif mode == "reduced":
+                    if len(data["len"]) == 2:
+                        s_inputs_p = s_inputs[:len_p].mean(dim=0)
+                        s_inputs_m = s_inputs[len_p:].mean(dim=0)
+                        s_p = s[:len_p].mean(dim=0)
+                        s_m = s[len_p:].mean(dim=0)
+                        z_pm = z_interact[0].mean(dim=(0, 1))
+                        cache[sample_name] = (
+                            s_inputs_p.cpu(),
+                            s_inputs_m.cpu(),
+                            s_p.cpu(),
+                            s_m.cpu(),
+                            z_pm.cpu(),
+                        )
+                    elif len(data["len"]) == 3:
+                        s_inputs_p = s_inputs[:len_p].mean(dim=0)
+                        s_inputs_m1 = s_inputs[len_p : len_p + len_m1].mean(dim=0)
+                        s_inputs_m2 = s_inputs[len_p + len_m1 :].mean(dim=0)
+                        s_p = s[:len_p].mean(dim=0)
+                        s_m1 = s[len_p : len_p + len_m1].mean(dim=0)
+                        s_m2 = s[len_p + len_m1 :].mean(dim=0)
+                        z_pm1 = z_interact[0].mean(dim=(0, 1))
+                        z_pm2 = z_interact[1].mean(dim=(0, 1))
+                        z_m1m2 = z_interact[2].mean(dim=(0, 1))
+                        cache[sample_name] = (
+                            s_inputs_p.cpu(),
+                            s_inputs_m1.cpu(),
+                            s_inputs_m2.cpu(),
+                            s_p.cpu(),
+                            s_m1.cpu(),
+                            s_m2.cpu(),
+                            z_pm1.cpu(),
+                            z_pm2.cpu(),
+                            z_m1m2.cpu(),
+                        )
+                else:
+                    raise ValueError(
+                        f"mode should be full or pair, but got {mode}"
+                    )
                 # runner.dumper.dump(
                 #     dataset_name="",
                 #     pdb_id=sample_name,
@@ -340,7 +385,10 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                 logger.info(error_message)
                 # Save error info
                 with open(
-                    opjoin(runner.error_dir, f"{sample_name}.txt"), "a"
+                    opjoin(
+                        runner.error_dir, f"{sample_name.replace('/', '-')}.txt"
+                    ),
+                    "a",
                 ) as f:
                     f.write(error_message)
                 if hasattr(torch.cuda, "empty_cache"):
@@ -352,9 +400,7 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
             split_key = f"{mode}_pair"
         elif len(data["len"]) == 3:
             split_key = f"{mode}_triplet"
-        lmdb_dataset.set_split(
-            split_key, list(cache.keys()), append=True
-        )
+        lmdb_dataset.set_split(split_key, list(cache.keys()), append=True)
 
 
 def main(configs: Any) -> None:
