@@ -1,0 +1,5 @@
+_target_: protenix.criterion.rank.RankCriterion
+loss:
+  _target_: protenix.criterion.loss.RankNetLoss
+  normalize_logits: false
+  weight_penalty: 0.001

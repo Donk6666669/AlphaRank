@@ -1,0 +1,279 @@
+import random
+from typing import List, Union, Dict, Any, Optional
+from multiprocessing import Manager
+from functools import lru_cache
+
+import torch
+from torch.utils.data import Dataset, DataLoader
+from hydra.utils import instantiate
+from lightning import LightningDataModule
+from torch.utils.data.dataloader import default_collate
+
+from protenix.utils.lmdb import LMDBDataset
+from protenix.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
+
+class DatasetBase(Dataset):
+
+    def __init__(
+        self,
+        meta_path: str,
+        meta_split: str = "train_3w",
+        feat_lmdb_path: Union[str, List[str]] = None,
+        feat_split: Union[str, List[str]] = None,
+    ):
+        if isinstance(feat_lmdb_path, str):
+            feat_lmdb_path = [feat_lmdb_path]
+        if isinstance(feat_split, str):
+            feat_split = [feat_split] * len(feat_lmdb_path)
+        assert len(feat_lmdb_path) == len(
+            feat_split
+        ), "lmdb_path and split must have the same length"
+
+        self.meta_path = meta_path
+        self.meta_split = meta_split
+        self.lmdb_path = feat_lmdb_path
+        self.split = feat_split
+
+        self.meta_dataset = LMDBDataset(meta_path)
+        self.meta_keys = self.meta_dataset[self.meta_split]
+
+        self.lmdb_list = []
+        self.keys_list = []
+        self.keys2lmdbidx = {}
+        for i, (path, sp) in enumerate(zip(self.lmdb_path, self.split)):
+            lmdb_dataset = LMDBDataset(path)
+            keys = lmdb_dataset.get_split(sp)
+            assert len(keys) > 0, f"split {sp} is empty for {path}"
+
+            self.keys2lmdbidx.update({key: i for key in keys})
+            self.lmdb_list.append(lmdb_dataset)
+
+        self.check_keys()
+
+    def check_keys(self):
+        pass
+
+    def __len__(self):
+        return len(self.meta_keys)
+
+    def __getitem__(self, idx):
+        raise NotImplementedError("getitem method not implemented")
+
+
+class PairDataset(DatasetBase):
+    def check_keys(self):
+        missing_samples = set()
+        missing_keys = set()
+        for key in self.meta_keys:
+            uniprot_id, positive_key, negative_key = key.split("/")
+            positive_feat_key = f"{uniprot_id}/{positive_key}"
+            negative_feat_key = f"{uniprot_id}/{negative_key}"
+
+            miss_positive_feat_key = positive_feat_key not in self.keys2lmdbidx
+            miss_negative_feat_key = negative_feat_key not in self.keys2lmdbidx
+            if miss_positive_feat_key or miss_negative_feat_key:
+                missing_samples.add(key)
+                if miss_positive_feat_key:
+                    missing_keys.add(positive_feat_key)
+                if miss_negative_feat_key:
+                    missing_keys.add(negative_feat_key)
+
+        logger.info(f"total samples: {len(self.meta_keys)}")
+        logger.info(f"total keys: {len(self.keys2lmdbidx)}")
+        logger.info(f"missing samples: {len(missing_samples)}")
+        logger.info(f"missing keys: {len(missing_keys)}")
+
+    def parse_feat(self, feat_key):
+        # Implement this method in subclasses
+        raise NotImplementedError("parse method not implemented")
+
+    def __getitem__(self, idx):
+        try:
+            pair_key = self.meta_keys[idx]
+            uniprot_id, positive_key, negative_key = pair_key.split("/")
+            positive_feat_key = f"{uniprot_id}/{positive_key}"
+            negative_feat_key = f"{uniprot_id}/{negative_key}"
+
+            # whether weak-strong active pairs or active inactive pairs
+            hard = uniprot_id in negative_key
+
+            # positive_feat = self.parse_feat(self.lmdb_list[
+            #     self.keys2lmdbidx[positive_feat_key]
+            # ][positive_feat_key])
+            # negative_feat = self.parse_feat(self.lmdb_list[
+            #     self.keys2lmdbidx[negative_feat_key]
+            # ][negative_feat_key])
+            positive_feat = self.parse_feat(positive_feat_key)
+            negative_feat = self.parse_feat(negative_feat_key)
+
+            positive_label = 1.0
+            negative_label = 0.0
+
+            reverse = random.random() < 0.5
+            if reverse:
+                res = {
+                    "pm1": negative_feat,
+                    "pm2": positive_feat,
+                    "label": positive_label
+                    > negative_label,  # label: pm2 > pm1
+                }
+            else:
+                res = {
+                    "pm1": positive_feat,
+                    "pm2": negative_feat,
+                    "label": negative_label > positive_label,
+                }
+            res["hard"] = hard
+            res["idx"] = idx
+            return res
+        except Exception:
+            return None
+
+
+class FullReducePairDataset(PairDataset):
+
+    @lru_cache(maxsize=None)
+    def parse_feat(self, feat_key):
+        data = self.lmdb_list[self.keys2lmdbidx[feat_key]][feat_key]
+        s_inputs, s, (z_pm, z_mp) = data
+        len_p, len_m = z_pm.shape[0], z_mp.shape[1]
+        s_inputs_p = s_inputs[:len_p].mean(dim=0)
+        s_inputs_m = s_inputs[len_p:].mean(dim=0)
+        s_p = s[:len_p].mean(dim=0)
+        s_m = s[len_p:].mean(dim=0)
+        z_pm = z_pm.mean(dim=(0, 1))
+        z_mp = z_mp.mean(dim=(0, 1))
+        res = {
+            "s_inputs_p": s_inputs_p.float(),
+            "s_inputs_m": s_inputs_m.float(),
+            "s_p": s_p.float(),
+            "s_m": s_m.float(),
+            "z_pm": z_pm.float(),
+            "z_mp": z_mp.float(),
+        }
+        return res
+
+    def collate_fn(self, batch):
+        batch = [item for item in batch if item is not None]
+        return default_collate(batch)
+
+
+class ReducePairDataset(PairDataset):
+
+    @lru_cache(maxsize=None)
+    def parse_feat(self, feat_key):
+        data = self.lmdb_list[self.keys2lmdbidx[feat_key]][feat_key]
+        s_inputs_p, s_inputs_m, s_p, s_m, z_pm = data
+        res = {
+            "s_inputs_p": s_inputs_p.float(),
+            "s_inputs_m": s_inputs_m.float(),
+            "s_p": s_p.float(),
+            "s_m": s_m.float(),
+            "z_pm": z_pm.float(),
+        }
+        return res
+
+    def collate_fn(self, batch):
+        batch = [item for item in batch if item is not None]
+        return default_collate(batch)
+
+
+class TripletDataset(DatasetBase):
+    def check_keys(self):
+        missing_keys = set()
+        for key in self.meta_keys:
+            miss_key = key not in self.keys2lmdbidx
+            if miss_key:
+                missing_keys.add(key)
+
+        logger.info(f"total samples: {len(self.meta_keys)}")
+        logger.info(f"missing samples: {len(missing_keys)}")
+
+    def parse_feat(self, feat_key):
+        # Implement this method in subclasses
+        raise NotImplementedError("parse_feat method not implemented")
+
+    def __getitem__(self, idx):
+        try:
+            triplet_key = self.meta_keys[idx]
+            uniprot_id, positive_key, negative_key = triplet_key.split("/")
+            hard = uniprot_id in negative_key
+            feat = self.parse_feat(triplet_key)
+
+            res = {
+                "feat": feat,
+                "label": True,
+                "hard": hard,
+                "idx": idx,
+            }
+            return res
+        except Exception:
+            return None
+
+
+class FullReduceTripletDataset(TripletDataset):
+    def parse_feat(self, data):
+        s_inputs, s, (z_pm, z_mp) = data
+        len_p, len_m = z_pm.shape[0], z_mp.shape[1]
+        s_inputs_p = s_inputs[:len_p].mean(dim=0)
+        s_inputs_m = s_inputs[len_p:].mean(dim=0)
+        s_p = s[:len_p].mean(dim=0)
+        s_m = s[len_p:].mean(dim=0)
+        z_pm = z_pm.mean(dim=(0, 1))
+        z_mp = z_mp.mean(dim=(0, 1))
+        return {
+            "s_inputs": (s_inputs_p, s_inputs_m),
+            "s": (s_p, s_m),
+            "z": (z_pm, z_mp),
+        }
+
+    def collate_fn(self, batch):
+        batch = [item for item in batch if item is not None]
+        res = {}
+        for key in batch[0].keys():
+            if key in ["label", "hard", "idx"]:
+                res[key] = torch.tensor([item[key] for item in batch])
+            elif type(batch[0][key]) is dict:
+                res[key] = {}
+                for k in batch[0][key].keys():
+                    res[key][k] = torch.stack(
+                        [item[key][k].float() for item in batch]
+                    )
+        return res
+
+
+class DataModule(LightningDataModule):
+    def __init__(
+        self,
+        num_workers: int = 0,
+        pin_memory: bool = False,
+        batch_size: int = 1,
+        dataset_args: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ):
+        super().__init__()
+        self.save_hyperparameters(logger=False)
+
+    def _dataloader(self, split):
+        args = self.hparams.dataset_args[split]
+        dataset = instantiate(args)
+        dataloader = DataLoader(
+            dataset,
+            batch_size=self.hparams.batch_size,
+            num_workers=self.hparams.num_workers,
+            pin_memory=self.hparams.pin_memory,
+            collate_fn=dataset.collate_fn,
+            shuffle=split == "train",
+            persistent_workers=True,
+            prefetch_factor=4
+        )
+        return dataloader
+
+    def train_dataloader(self):
+        return self._dataloader("train")
+
+    def val_dataloader(self):
+        return self._dataloader("val")

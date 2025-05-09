@@ -11,7 +11,7 @@ import zstandard as zstd
 logger = logging.getLogger(__name__)
 
 # 1T map_size, ref: https://lmdb.readthedocs.io/en/release/#environment-class
-MAP_SIZE = 10 * 1024 * 1024 * 1024 * 1024  # 10T
+MAP_SIZE = 1 * 1024 * 1024 * 1024 * 1024  # 10T
 
 
 class LMDBDataset:

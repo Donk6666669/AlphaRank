@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 lmdb = LMDBDataset("/data/rerank/protenix/chembl_bdb/chembl_bdb.lmdb")
 assay_groups = lmdb["assay_groups"]
 assay_pairs = lmdb["assay_pairs"]
-len(assay_pairs)
 
 
 print("assay whose protein len < 1024")

@@ -1,0 +1,5 @@
+# @package _global_
+defaults:
+  - override /logging: [csv]
+
+task_name: debug

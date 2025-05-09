@@ -42,7 +42,7 @@ from .modules.embedders import (
 from .modules.head import DistogramHead
 from .modules.pairformer import MSAModule, PairformerStack, TemplateEmbedder
 from .modules.primitives import LinearNoBias
-from .rank_model import CrossIndependentRanker
+from .rank_model import PairRanker
 
 logger = get_logger(__name__)
 
@@ -335,7 +335,7 @@ class ProtenisP(nn.Module):
 
 
 class ProtenisPCrossIndependentRanker(nn.Module):
-    def __init__(self, configs, rank_model: CrossIndependentRanker):
+    def __init__(self, configs, rank_model: PairRanker):
         super().__init__()
         self.configs = configs
         self.encoder = ProtenisP(configs)

@@ -1,0 +1,7 @@
+_target_: protenix.model.rank_model.MLPPairRanker
+s_input_dim: 449
+s_dim: 384
+z_dim: 128
+mid_dim: 128
+dropout: 0.2
+strategy: "cat_sz"

@@ -1,96 +1,102 @@
 import torch
+import torch.nn.functional as F
 from torch import nn
 
 
-class CrossIndependentRanker(nn.Module):
+class PairRanker(nn.Module):
     def __init__(self, s_input_dim=449, s_dim=384, z_dim=128):
         super().__init__()
         self.s_input_dim = s_input_dim
         self.s_dim = s_dim
         self.z_dim = z_dim
+        self.encoder: nn.Module = None
 
-    def forward(
+    def single_forward(
         self,
-        s_inputs: torch.Tensor = None,
-        s: torch.Tensor = None,
-        z: torch.Tensor = None,
-        pocket_mask: torch.Tensor = None,
-        mol_mask: torch.Tensor = None,
+        s_inputs_p: torch.Tensor = None,
+        s_inputs_m: torch.Tensor = None,
+        s_p: torch.Tensor = None,
+        s_m: torch.Tensor = None,
+        z_pm: torch.Tensor = None,
+        z_mp: torch.Tensor = None,
+        **kwargs,
     ):
         raise NotImplementedError(
-            "IndependentRanker is an abstract class. Please use a subclass."
+            "single_forward should be implemented in the subclass"
         )
 
+    def split_forward(
+        self,
+        pm1: dict[str, torch.Tensor] = None,
+        pm2: dict[str, torch.Tensor] = None,
+        **kwargs,
+    ):
+        pm1_pred = self.single_forward(**pm1)["pred"]
+        pm2_pred = self.single_forward(**pm2)["pred"]
+        return {
+            "pm1_pred": pm1_pred,
+            "pm2_pred": pm2_pred,
+            "pred": F.sigmoid(pm2_pred - pm1_pred),
+        }
 
-class IRSimpleClassifier(CrossIndependentRanker):
+    def forward(self, **kwargs):
+        if "pm1" in kwargs and "pm2" in kwargs:
+            return self.split_forward(**kwargs)
+        else:
+            return self.single_forward(**kwargs)
+
+
+class MLPPairRanker(PairRanker):
     def __init__(
-        self, s_input_dim=449, s_dim=384, z_dim=128, mid_dim=128, dropout=0.5
+        self,
+        s_input_dim=449,
+        s_dim=384,
+        z_dim=128,
+        mid_dim=128,
+        dropout=0.5,
+        strategy="cat_sz",
     ):
         super().__init__(s_input_dim, s_dim, z_dim)
 
-        self.input_dim = s_dim + z_dim
         self.mid_dim = mid_dim
-        self.classifier = nn.Sequential(
-            nn.Linear(s_dim * 2 + z_dim, self.mid_dim),
+        self.dropout = dropout
+        self.strategy = strategy
+
+        if strategy == "cat_sz":
+            self.input_dim = self.s_dim * 2 + z_dim
+        else:
+            raise ValueError(f"Unknown strategy: {strategy}")
+
+        self.encoder = nn.Sequential(
+            nn.Linear(self.input_dim, self.mid_dim),
             nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(self.mid_dim, self.mid_dim),
+            nn.Dropout(self.dropout),
+            nn.Linear(self.mid_dim, int(self.mid_dim / 2)),
             nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(self.mid_dim, 1),
+            nn.Dropout(self.dropout),
+            nn.Linear(int(self.mid_dim / 2), 1),
         )
 
-    def forward(
+    def single_forward(
         self,
-        s_inputs: torch.Tensor = None,
-        s: torch.Tensor = None,
-        z: torch.Tensor = None,
-        pocket_mask: torch.Tensor = None,
-        mol_mask: torch.Tensor = None,
+        s_inputs_p: torch.Tensor = None,
+        s_inputs_m: torch.Tensor = None,
+        s_p: torch.Tensor = None,
+        s_m: torch.Tensor = None,
+        z_pm: torch.Tensor = None,
+        z_mp: torch.Tensor = None,
     ):
-        """
-        s_inputs: (N_token, s_input_dim)
-        s: (N_token, s_dim)
-        z: (N_token, N_token, z_dim)
-        pocket_mask: (N_token, 1)
-        mol_mask: (N_token, 1)
-        """
-        # Concatenate s and z
-        s_pocket = s[pocket_mask].mean(dim=0)
-        s_mol = s[mol_mask].mean(dim=0)
-        z_pocket_mol = z[pocket_mask][:, mol_mask].mean(
-            dim=(0, 1)
-        )
+        if self.strategy == "cat_sz":
+            x = torch.cat([s_p, s_m, z_pm], dim=1)
+        else:
+            raise ValueError(f"Unknown strategy: {self.strategy}")
 
-        x = torch.cat([s_pocket, s_mol, z_pocket_mol], dim=0)
-        x = self.classifier(x)
-        return x
+        pred = self.encoder(x).squeeze(1)
+        return {
+            "pred": pred
+        }
 
 
-class AffinityClassifier(nn.Module):
-    def __init__(self, input_dim):
-        super().__init__()
-        self.linear = nn.Linear(input_dim, 1)
+class TripletRanker(nn.Module):
+    pass
 
-    def forward(self, x):
-        return self.linear(x).squeeze(1)  # output shape: (batch,)
-
-
-class AffinityClassifier_mlp(nn.Module):
-    def __init__(self, input_dim):
-        super().__init__()
-        self.fc1 = nn.Linear(input_dim, 128)
-        self.fc2 = nn.Linear(128, 64)
-        self.fc3 = nn.Linear(64, 1)
-        self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(0.5)
-
-    def forward(self, x):
-        x = self.fc1(x)
-        x = self.relu(x)
-        x = self.dropout(x)
-        x = self.fc2(x)
-        x = self.relu(x)
-        x = self.dropout(x)
-        x = self.fc3(x)
-        return x.squeeze(1)

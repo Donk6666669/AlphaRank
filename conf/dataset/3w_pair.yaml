@@ -1,0 +1,25 @@
+_target_: protenix.data.pair_dataset.DataModule
+num_workers: 32
+pin_memory: True
+batch_size: 1024
+dataset_args:
+  train:
+    _target_: protenix.data.pair_dataset.FullReducePairDataset
+    meta_path: /data/rerank/protenix/chembl_bdb/chembl_bdb_meta.lmdb
+    meta_split: train_3w
+    feat_lmdb_path:
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_1.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_2.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_3.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_4.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_5.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_6.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_7.lmdb
+    feat_split: full_pair
+  val:
+    _target_: protenix.data.pair_dataset.FullReducePairDataset
+    meta_path: /data/rerank/protenix/chembl_bdb/chembl_bdb_meta.lmdb
+    meta_split: val_5k
+    feat_lmdb_path:
+      - /data/rerank/protenix/chembl_bdb/sample_val/sample_val_pair.lmdb
+    feat_split: full_pair

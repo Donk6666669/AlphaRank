@@ -1,0 +1,14 @@
+_target_: lightning.Trainer
+accelerator: gpu
+devices: 1
+sync_batchnorm: True
+deterministic: false
+precision: 32
+accumulate_grad_batches: 1
+profiler: null
+max_epochs: 25
+val_check_interval: 1.
+default_root_dir: ${paths.output_dir}
+
+defaults:
+  - strategy: ddp

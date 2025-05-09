@@ -369,6 +369,24 @@ CUDA_VISIBLE_DEVICES=7 protenix predict --input /data/rerank/protenix/chembl_bdb
     --start 225000 \
     --end 250000
 
+CUDA_VISIBLE_DEVICES=0 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_30w/sample_30w_triplet.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_30w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --reduce \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_30w/triplet/sample_30w_triplet_11.lmdb \
+    --start 250000 \
+    --end 275000
+
+CUDA_VISIBLE_DEVICES=1 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_30w/sample_30w_triplet.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_30w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --reduce \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_30w/triplet/sample_30w_triplet_12.lmdb \
+    --start 275000 \
+    --end 300000
+
 # sample val pair
 CUDA_VISIBLE_DEVICES=6 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val/sample_val_pair.json \
     --out_dir /data/rerank/protenix/chembl_bdb/sample_val/output \

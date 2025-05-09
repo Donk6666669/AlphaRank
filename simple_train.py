@@ -23,7 +23,7 @@ from protenix.data.screen_dataset import (
 )
 from protenix.model.protenis import ProtenisP, ProtenisPCrossIndependentRanker
 from protenix.model.rank_model import IRSimpleClassifier
-from protenix.model.screen_loss import RankNetLoss
+from protenix.criterion.loss import RankNetLoss
 
 from configs.configs_base import configs as configs_base
 from configs.configs_data import data_configs
