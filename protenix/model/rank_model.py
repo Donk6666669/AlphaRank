@@ -62,10 +62,46 @@ class MLPPairRanker(PairRanker):
         self.dropout = dropout
         self.strategy = strategy
 
-        if strategy == "cat_sz":
-            self.input_dim = self.s_dim * 2 + z_dim
+        # single feature
+        if self.strategy == "s_input":
+            self.input_dim = self.s_input_dim * 2
+        elif self.strategy == "s_input_p_only":
+            self.input_dim = self.s_input_dim
+        elif self.strategy == "s_input_m_only":
+            self.input_dim = self.s_input_dim
+        elif self.strategy == "s":
+            self.input_dim = self.s_dim * 2
+        elif self.strategy == "s_p_only":
+            self.input_dim = self.s_dim
+        elif self.strategy == "s_m_only":
+            self.input_dim = self.s_dim
+        elif self.strategy == "z":
+            self.input_dim = self.z_dim
+        elif self.strategy == "zdouble":
+            self.input_dim = self.z_dim * 2
+
+        # cat two features
+        elif self.strategy == "cat_sz":
+            self.input_dim = self.s_dim * 2 + self.z_dim
+        elif self.strategy == "cat_s_zdouble":
+            self.input_dim = self.s_dim * 2 + self.z_dim * 2
+        elif self.strategy == "cat_s_m_only_z":
+            self.input_dim = self.s_dim + self.z_dim
+        elif self.strategy == "cat_s_input_z":
+            self.input_dim = self.s_input_dim * 2 + self.z_dim
+        elif self.strategy == "cat_s_input_zdouble":
+            self.input_dim = self.s_input_dim * 2 + self.z_dim * 2
+        elif self.strategy == "cat_s_input_s":
+            self.input_dim = self.s_input_dim * 2 + self.s_dim * 2
+
+        # cat three features
+        elif self.strategy == "cat_s_input_s_z":
+            self.input_dim = self.s_input_dim * 2 + self.s_dim * 2 + self.z_dim
+        elif self.strategy == "cat_s_input_s_zdouble":
+            self.input_dim = self.s_input_dim * 2 + self.s_dim * 2 + self.z_dim * 2
+
         else:
-            raise ValueError(f"Unknown strategy: {strategy}")
+            raise ValueError(f"Unknown strategy: {self.strategy}")
 
         self.encoder = nn.Sequential(
             nn.Linear(self.input_dim, self.mid_dim),
@@ -86,8 +122,44 @@ class MLPPairRanker(PairRanker):
         z_pm: torch.Tensor = None,
         z_mp: torch.Tensor = None,
     ):
-        if self.strategy == "cat_sz":
+        # single feature
+        if self.strategy == "s_input":
+            x = torch.cat([s_inputs_p, s_inputs_m], dim=1)
+        elif self.strategy == "s_input_p_only":
+            x = s_inputs_p
+        elif self.strategy == "s_input_m_only":
+            x = s_inputs_m
+        elif self.strategy == "s":
+            x = torch.cat([s_p, s_m], dim=1)
+        elif self.strategy == "s_p_only":
+            x = s_p
+        elif self.strategy == "s_m_only":
+            x = s_m
+        elif self.strategy == "z":
+            x = torch.cat([z_pm], dim=1)
+        elif self.strategy == "zdouble":
+            x = torch.cat([z_pm, z_mp], dim=1)
+
+        # cat two features
+        elif self.strategy == "cat_sz":
             x = torch.cat([s_p, s_m, z_pm], dim=1)
+        elif self.strategy == "cat_s_zdouble":
+            x = torch.cat([s_p, s_m, z_pm, z_mp], dim=1)
+        elif self.strategy == "cat_s_m_only_z":
+            x = torch.cat([s_m, z_pm], dim=1)
+        elif self.strategy == "cat_s_input_z":
+            x = torch.cat([s_inputs_p, s_inputs_m, z_pm], dim=1)
+        elif self.strategy == "cat_s_input_zdouble":
+            x = torch.cat([s_inputs_p, s_inputs_m, z_pm, z_mp], dim=1)
+        elif self.strategy == "cat_s_input_s":
+            x = torch.cat([s_inputs_p, s_inputs_m, s_p, s_m], dim=1)
+
+        # cat three features
+        elif self.strategy == "cat_s_input_s_z":
+            x = torch.cat([s_inputs_p, s_inputs_m, s_p, s_m, z_pm], dim=1)
+        elif self.strategy == "cat_s_input_s_zdouble":
+            x = torch.cat([s_inputs_p, s_inputs_m, s_p, s_m, z_pm, z_mp], dim=1)
+
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
 

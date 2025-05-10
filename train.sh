@@ -168,6 +168,73 @@
 # *
 # python train.py name=3w_base
 
-# *
+# # *
 # python train.py name=30w_base \
 #     experiment=30w_pair
+
+# Train commands for all listed strategies
+
+python train.py experiment=30w_pair \
+    model.strategy="s_input" \
+    name=30w_s_input
+
+python train.py experiment=30w_pair \
+    model.strategy="s_input_p_only" \
+    name=30w_s_input_p_only
+
+python train.py experiment=30w_pair \
+    model.strategy="s_input_m_only" \
+    name=30w_s_input_m_only
+
+python train.py experiment=30w_pair \
+    model.strategy="s" \
+    name=30w_s
+
+python train.py experiment=30w_pair \
+    model.strategy="s_p_only" \
+    name=30w_s_p_only
+
+python train.py experiment=30w_pair \
+    model.strategy="s_m_only" \
+    name=30w_s_m_only
+
+python train.py experiment=30w_pair \
+    model.strategy="z" \
+    name=30w_z
+
+python train.py experiment=30w_pair \
+    model.strategy="zdouble" \
+    name=30w_zdouble
+
+python train.py experiment=30w_pair \
+    model.strategy="cat_sz" \
+    name=30w_cat_sz
+
+python train.py experiment=30w_pair \
+    model.strategy="cat_s_zdouble" \
+    name=30w_cat_s_zdouble
+
+python train.py experiment=30w_pair \
+    model.strategy="cat_s_input_z" \
+    name=30w_cat_s_input_z
+
+python train.py experiment=30w_pair \
+    model.strategy="cat_s_input_zdouble" \
+    name=30w_cat_s_input_zdouble
+
+python train.py experiment=30w_pair \
+    model.strategy="cat_s_input_s" \
+    name=30w_cat_s_input_s
+
+python train.py experiment=30w_pair \
+    model.strategy="cat_s_input_s_z" \
+    name=30w_cat_s_input_s_z
+
+python train.py experiment=30w_pair \
+    model.strategy="cat_s_input_s_zdouble" \
+    name=30w_cat_s_input_s_zdouble
+
+
+python train.py experiment=30w_pair \
+    model.strategy="cat_s_m_only_z" \
+    name=30w_cat_s_m_only_z
