@@ -11,3 +11,4 @@ trainer:
 dataset:
   num_workers: 0 # debuggers don't like multiprocessing
   pin_memory: False # disable gpu memory pin
+  prefetch_factor: null # disable prefetching

@@ -1,0 +1,3 @@
+_target_: protenix.criterion.rank.RankCriterion
+loss:
+  _target_: protenix.criterion.loss.BCELoss

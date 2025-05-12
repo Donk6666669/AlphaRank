@@ -1,6 +1,5 @@
 import random
 from typing import List, Union, Dict, Any, Optional
-from multiprocessing import Manager
 from functools import lru_cache
 
 import torch
@@ -23,6 +22,10 @@ class DatasetBase(Dataset):
         meta_split: str = "train_3w",
         feat_lmdb_path: Union[str, List[str]] = None,
         feat_split: Union[str, List[str]] = None,
+        include_screen: bool = True,
+        max_screen: int = None,
+        include_rerank: bool = True,
+        max_rerank: int = None,
     ):
         if isinstance(feat_lmdb_path, str):
             feat_lmdb_path = [feat_lmdb_path]
@@ -35,7 +38,11 @@ class DatasetBase(Dataset):
         self.meta_path = meta_path
         self.meta_split = meta_split
         self.lmdb_path = feat_lmdb_path
-        self.split = feat_split
+        self.feat_split = feat_split
+        self.include_screen = include_screen
+        self.max_screen = max_screen
+        self.include_rerank = include_rerank
+        self.max_rerank = max_rerank
 
         self.meta_dataset = LMDBDataset(meta_path)
         self.meta_keys = self.meta_dataset[self.meta_split]
@@ -43,7 +50,7 @@ class DatasetBase(Dataset):
         self.lmdb_list = []
         self.keys_list = []
         self.keys2lmdbidx = {}
-        for i, (path, sp) in enumerate(zip(self.lmdb_path, self.split)):
+        for i, (path, sp) in enumerate(zip(self.lmdb_path, self.feat_split)):
             lmdb_dataset = LMDBDataset(path)
             keys = lmdb_dataset.get_split(sp)
             assert len(keys) > 0, f"split {sp} is empty for {path}"
@@ -51,7 +58,31 @@ class DatasetBase(Dataset):
             self.keys2lmdbidx.update({key: i for key in keys})
             self.lmdb_list.append(lmdb_dataset)
 
+        self.filter_keys()
         self.check_keys()
+
+    def filter_keys(self):
+        new_keys = []
+        n_screen = 0
+        n_rerank = 0
+        for key in self.meta_keys:
+            uniprot_id, positive_key, negative_key = key.split("/")
+            if uniprot_id in negative_key:
+                if self.include_rerank:
+                    if self.max_rerank is None or n_rerank < self.max_rerank:
+                        new_keys.append(key)
+                        n_rerank += 1
+            else:
+                if self.include_screen:
+                    if self.max_screen is None or n_screen < self.max_screen:
+                        new_keys.append(key)
+                        n_screen += 1
+        self.meta_keys = new_keys
+        logger.info(
+            f"total samples: {len(self.meta_keys)}, "
+            f"screen samples: {n_screen}, "
+            f"rerank samples: {n_rerank}"
+        )
 
     def check_keys(self):
         pass
@@ -201,13 +232,21 @@ class TripletDataset(DatasetBase):
             triplet_key = self.meta_keys[idx]
             uniprot_id, positive_key, negative_key = triplet_key.split("/")
             hard = uniprot_id in negative_key
-            feat = self.parse_feat(triplet_key)
+
+            positive_label = 1.0
+            negative_label = 0.0
+            reverse_m1m2 = random.random() < 0.5
+            feat = self.parse_feat(triplet_key, reverse_m1m2=reverse_m1m2)
+            if reverse_m1m2:
+                label = positive_label > negative_label  # label: pm2 > pm1
+            else:
+                label = negative_label > positive_label
 
             res = {
-                "feat": feat,
-                "label": True,
+                "label": label,
                 "hard": hard,
                 "idx": idx,
+                **feat,
             }
             return res
         except Exception:
@@ -215,34 +254,95 @@ class TripletDataset(DatasetBase):
 
 
 class FullReduceTripletDataset(TripletDataset):
-    def parse_feat(self, data):
-        s_inputs, s, (z_pm, z_mp) = data
-        len_p, len_m = z_pm.shape[0], z_mp.shape[1]
+    def parse_feat(self, feat_key, reverse_m1m2=False):
+        data = self.lmdb_list[self.keys2lmdbidx[feat_key]][feat_key]
+        s_inputs, s, (z_pm1, z_pm2, z_m1m2, z_m1p, z_m2p, z_m2m1) = data
+
+        len_p, len_m1, len_m2 = z_pm1.shape[0], z_pm1.shape[1], z_pm2.shape[1]
         s_inputs_p = s_inputs[:len_p].mean(dim=0)
-        s_inputs_m = s_inputs[len_p:].mean(dim=0)
+        s_inputs_m1 = s_inputs[len_p : len_p + len_m1].mean(dim=0)
+        s_inputs_m2 = s_inputs[len_p + len_m1 :].mean(dim=0)
         s_p = s[:len_p].mean(dim=0)
-        s_m = s[len_p:].mean(dim=0)
-        z_pm = z_pm.mean(dim=(0, 1))
-        z_mp = z_mp.mean(dim=(0, 1))
-        return {
-            "s_inputs": (s_inputs_p, s_inputs_m),
-            "s": (s_p, s_m),
-            "z": (z_pm, z_mp),
-        }
+        s_m1 = s[len_p : len_p + len_m1].mean(dim=0)
+        s_m2 = s[len_p + len_m1 :].mean(dim=0)
+        z_pm1 = z_pm1.mean(dim=(0, 1))
+        z_pm2 = z_pm2.mean(dim=(0, 1))
+        z_m1m2 = z_m1m2.mean(dim=(0, 1))
+
+        if reverse_m1m2:
+            res = {
+                "s_inputs_p": s_inputs_p.float(),
+                "s_inputs_m1": s_inputs_m2.float(),
+                "s_inputs_m2": s_inputs_m1.float(),
+                "s_p": s_p.float(),
+                "s_m1": s_m2.float(),
+                "s_m2": s_m1.float(),
+                "z_pm1": z_pm2.float(),
+                "z_pm2": z_pm1.float(),
+                "z_m1m2": z_m1m2.float(),
+            }
+        else:
+            res = {
+                "s_inputs_p": s_inputs_p.float(),
+                "s_inputs_m1": s_inputs_m1.float(),
+                "s_inputs_m2": s_inputs_m2.float(),
+                "s_p": s_p.float(),
+                "s_m1": s_m1.float(),
+                "s_m2": s_m2.float(),
+                "z_pm1": z_pm1.float(),
+                "z_pm2": z_pm2.float(),
+                "z_m1m2": z_m1m2.float(),
+            }
+        return res
 
     def collate_fn(self, batch):
         batch = [item for item in batch if item is not None]
-        res = {}
-        for key in batch[0].keys():
-            if key in ["label", "hard", "idx"]:
-                res[key] = torch.tensor([item[key] for item in batch])
-            elif type(batch[0][key]) is dict:
-                res[key] = {}
-                for k in batch[0][key].keys():
-                    res[key][k] = torch.stack(
-                        [item[key][k].float() for item in batch]
-                    )
-        return res
+        return default_collate(batch)
+
+
+class ReduceTripletDataset(TripletDataset):
+    @lru_cache(maxsize=None)
+    def parse_feat(self, feat_key, reverse_m1m2=False):
+        data = self.lmdb_list[self.keys2lmdbidx[feat_key]][feat_key]
+        (
+            s_inputs_p,
+            s_inputs_m1,
+            s_inputs_m2,
+            s_p,
+            s_m1,
+            s_m2,
+            z_pm1,
+            z_pm2,
+            z_m1m2,
+        ) = data
+        if reverse_m1m2:
+            return {
+                "s_inputs_p": s_inputs_p.float(),
+                "s_inputs_m1": s_inputs_m2.float(),
+                "s_inputs_m2": s_inputs_m1.float(),
+                "s_p": s_p.float(),
+                "s_m1": s_m2.float(),
+                "s_m2": s_m1.float(),
+                "z_pm1": z_pm2.float(),
+                "z_pm2": z_pm1.float(),
+                "z_m1m2": z_m1m2.float(),
+            }
+        else:
+            return {
+                "s_inputs_p": s_inputs_p.float(),
+                "s_inputs_m1": s_inputs_m1.float(),
+                "s_inputs_m2": s_inputs_m2.float(),
+                "s_p": s_p.float(),
+                "s_m1": s_m1.float(),
+                "s_m2": s_m2.float(),
+                "z_pm1": z_pm1.float(),
+                "z_pm2": z_pm2.float(),
+                "z_m1m2": z_m1m2.float(),
+            }
+
+    def collate_fn(self, batch):
+        batch = [item for item in batch if item is not None]
+        return default_collate(batch)
 
 
 class DataModule(LightningDataModule):
@@ -251,6 +351,7 @@ class DataModule(LightningDataModule):
         num_workers: int = 0,
         pin_memory: bool = False,
         batch_size: int = 1,
+        prefetch_factor: int = 4,
         dataset_args: Optional[Dict[str, Any]] = None,
         **kwargs,
     ):
@@ -267,8 +368,8 @@ class DataModule(LightningDataModule):
             pin_memory=self.hparams.pin_memory,
             collate_fn=dataset.collate_fn,
             shuffle=split == "train",
-            persistent_workers=True,
-            prefetch_factor=4
+            persistent_workers=self.hparams.num_workers > 0,
+            prefetch_factor=self.hparams.prefetch_factor,
         )
         return dataloader
 

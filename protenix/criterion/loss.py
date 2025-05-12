@@ -35,3 +35,23 @@ class RankNetLoss(nn.Module):
             "loss": loss,
         }
         return result
+
+
+class BCELoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(
+        self,
+        pred: torch.Tensor,
+        label: torch.Tensor,
+        **kwargs,
+    ):
+        # label = pm2_label > pm1_label
+        target = label.float()
+        loss = F.binary_cross_entropy(pred, target)
+
+        result = {
+            "loss": loss,
+        }
+        return result

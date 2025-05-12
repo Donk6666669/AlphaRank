@@ -22,13 +22,13 @@ class RankCriterion(nn.Module):
         # name, metric, step_compute
         self.train_metrics = [
             ("acc", Accuracy(), True),
-            ("acc_hard", Accuracy(hard_set=True), True),
-            ("acc_easy", Accuracy(hard_set=False), True),
+            ("acc_rerank", Accuracy(hard_set=True), True),
+            ("acc_screen", Accuracy(hard_set=False), True),
         ]
         self.val_metrics = [
             ("acc", Accuracy(), False),
-            ("acc_hard", Accuracy(hard_set=True), False),
-            ("acc_easy", Accuracy(hard_set=False), False),
+            ("acc_rerank", Accuracy(hard_set=True), False),
+            ("acc_screen", Accuracy(hard_set=False), False),
         ]
 
         for name, metric, _ in self.train_metrics + self.val_metrics:

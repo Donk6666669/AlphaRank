@@ -1,0 +1,14 @@
+# @package _global_
+name: 30w_pair_screen
+notes: "Training on 30w pair data"
+
+defaults:
+  - override /dataset: 30w_pair
+  - override /callbacks: [checkpoint_screen, lr_monitor, rich, summary]
+
+dataset:
+  train:
+    include_screen: true
+    max_screen: null
+    include_rerank: false
+    max_rerank: null

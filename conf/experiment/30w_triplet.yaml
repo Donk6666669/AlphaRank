@@ -1,0 +1,8 @@
+# @package _global_
+name: 30w_triplet
+notes: "Training on 30w triplet data"
+
+defaults:
+  - override /dataset: 30w_triplet
+  - override /model: mlp_triplet_ranker
+  - override /criterion: rank_bce

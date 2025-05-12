@@ -1,0 +1,15 @@
+# @package _global_
+name: 30w_pair_rerank
+notes: "Training on 30w pair data"
+
+defaults:
+  - override /dataset: 30w_pair
+  - override /callbacks: [checkpoint_rerank, lr_monitor, rich, summary]
+
+dataset:
+  dataset_args:
+    train:
+      include_screen: false
+      max_screen: null
+      include_rerank: true
+      max_rerank: null

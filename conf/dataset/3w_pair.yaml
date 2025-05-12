@@ -16,6 +16,10 @@ dataset_args:
       - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_6.lmdb
       - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_7.lmdb
     feat_split: full_pair
+    include_screen: true
+    max_screen: null
+    include_rerank: true
+    max_rerank: null
   val:
     _target_: protenix.data.pair_dataset.FullReducePairDataset
     meta_path: /data/rerank/protenix/chembl_bdb/chembl_bdb_meta.lmdb

@@ -172,69 +172,361 @@
 # python train.py name=30w_base \
 #     experiment=30w_pair
 
-# Train commands for all listed strategies
+# # Train commands for all listed strategies
 
-python train.py experiment=30w_pair \
-    model.strategy="s_input" \
-    name=30w_s_input
+# python train.py experiment=30w_pair \
+#     model.strategy="s_input" \
+#     name=30w_s_input
 
-python train.py experiment=30w_pair \
-    model.strategy="s_input_p_only" \
-    name=30w_s_input_p_only
+# python train.py experiment=30w_pair \
+#     model.strategy="s_input_p_only" \
+#     name=30w_s_input_p_only
 
-python train.py experiment=30w_pair \
-    model.strategy="s_input_m_only" \
-    name=30w_s_input_m_only
+# python train.py experiment=30w_pair \
+#     model.strategy="s_input_m_only" \
+#     name=30w_s_input_m_only
 
-python train.py experiment=30w_pair \
-    model.strategy="s" \
-    name=30w_s
+# python train.py experiment=30w_pair \
+#     model.strategy="s" \
+#     name=30w_s
 
-python train.py experiment=30w_pair \
-    model.strategy="s_p_only" \
-    name=30w_s_p_only
+# python train.py experiment=30w_pair \
+#     model.strategy="s_p_only" \
+#     name=30w_s_p_only
 
-python train.py experiment=30w_pair \
-    model.strategy="s_m_only" \
-    name=30w_s_m_only
+# python train.py experiment=30w_pair \
+#     model.strategy="s_m_only" \
+#     name=30w_s_m_only
 
-python train.py experiment=30w_pair \
-    model.strategy="z" \
-    name=30w_z
+# python train.py experiment=30w_pair \
+#     model.strategy="z" \
+#     name=30w_z
 
-python train.py experiment=30w_pair \
-    model.strategy="zdouble" \
-    name=30w_zdouble
+# python train.py experiment=30w_pair \
+#     model.strategy="zdouble" \
+#     name=30w_zdouble
 
-python train.py experiment=30w_pair \
-    model.strategy="cat_sz" \
-    name=30w_cat_sz
+# python train.py experiment=30w_pair \
+#     model.strategy="cat_sz" \
+#     name=30w_cat_sz
 
-python train.py experiment=30w_pair \
-    model.strategy="cat_s_zdouble" \
-    name=30w_cat_s_zdouble
+# python train.py experiment=30w_pair \
+#     model.strategy="cat_s_zdouble" \
+#     name=30w_cat_s_zdouble
 
-python train.py experiment=30w_pair \
-    model.strategy="cat_s_input_z" \
-    name=30w_cat_s_input_z
+# python train.py experiment=30w_pair \
+#     model.strategy="cat_s_input_z" \
+#     name=30w_cat_s_input_z
 
-python train.py experiment=30w_pair \
-    model.strategy="cat_s_input_zdouble" \
-    name=30w_cat_s_input_zdouble
+# python train.py experiment=30w_pair \
+#     model.strategy="cat_s_input_zdouble" \
+#     name=30w_cat_s_input_zdouble
 
-python train.py experiment=30w_pair \
-    model.strategy="cat_s_input_s" \
-    name=30w_cat_s_input_s
+# python train.py experiment=30w_pair \
+#     model.strategy="cat_s_input_s" \
+#     name=30w_cat_s_input_s
 
-python train.py experiment=30w_pair \
-    model.strategy="cat_s_input_s_z" \
-    name=30w_cat_s_input_s_z
+# python train.py experiment=30w_pair \
+#     model.strategy="cat_s_input_s_z" \
+#     name=30w_cat_s_input_s_z
 
-python train.py experiment=30w_pair \
-    model.strategy="cat_s_input_s_zdouble" \
-    name=30w_cat_s_input_s_zdouble
+# python train.py experiment=30w_pair \
+#     model.strategy="cat_s_input_s_zdouble" \
+#     name=30w_cat_s_input_s_zdouble
 
 
-python train.py experiment=30w_pair \
-    model.strategy="cat_s_m_only_z" \
-    name=30w_cat_s_m_only_z
+# python train.py experiment=30w_pair \
+#     model.strategy="cat_s_m_only_z" \
+#     name=30w_cat_s_m_only_z
+
+# python train.py experiment=30w_pair_rerank \
+#     name=rerank_no_screen
+
+# python train.py experiment=30w_pair_rerank \
+#     name=rerank_3w_screen \
+#     dataset.dataset_args.train.include_screen=True \
+#     dataset.dataset_args.train.max_screen=30000
+
+# python train.py experiment=30w_pair_rerank \
+#     name=rerank_6w_screen \
+#     dataset.dataset_args.train.include_screen=True \
+#     dataset.dataset_args.train.max_screen=60000
+
+# python train.py experiment=30w_pair_rerank \
+#     name=rerank_9w_screen \
+#     dataset.dataset_args.train.include_screen=True \
+#     dataset.dataset_args.train.max_screen=90000
+
+# python train.py experiment=30w_pair_rerank \
+#     name=rerank_12w_screen \
+#     dataset.dataset_args.train.include_screen=True \
+#     dataset.dataset_args.train.max_screen=120000
+
+# python train.py experiment=30w_pair_rerank \
+#     name=rerank_15w_screen \
+#     dataset.dataset_args.train.include_screen=True \
+#     dataset.dataset_args.train.max_screen=150000
+
+# python train.py experiment=30w_pair_screen \
+#     name=screen_no_rerank
+
+# python train.py experiment=30w_pair_screen \
+#     name=screen_3w_rerank \
+#     dataset.dataset_args.train.include_rerank=True \
+#     dataset.dataset_args.train.max_rerank=30000
+
+# python train.py experiment=30w_pair_screen \
+#     name=screen_6w_rerank \
+#     dataset.dataset_args.train.include_rerank=True \
+#     dataset.dataset_args.train.max_rerank=60000
+
+# python train.py experiment=30w_pair_screen \
+#     name=screen_9w_rerank \
+#     dataset.dataset_args.train.include_rerank=True \
+#     dataset.dataset_args.train.max_rerank=90000
+
+# python train.py experiment=30w_pair_screen \
+#     name=screen_12w_rerank \
+#     dataset.dataset_args.train.include_rerank=True \
+#     dataset.dataset_args.train.max_rerank=120000
+
+# python train.py experiment=30w_pair_screen \
+#     name=screen_15w_rerank \
+#     dataset.dataset_args.train.include_rerank=True \
+#     dataset.dataset_args.train.max_rerank=150000
+
+# linear probe
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="s_input" \
+#     name=30w_linear_s_input
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="s_input_p_only" \
+#     name=30w_linear_s_input_p_only
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="s_input_m_only" \
+#     name=30w_linear_s_input_m_only
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="s" \
+#     name=30w_linear_s
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="s_p_only" \
+#     name=30w_linear_s_p_only
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="s_m_only" \
+#     name=30w_linear_s_m_only
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="z" \
+#     name=30w_linear_z
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="zdouble" \
+#     name=30w_linear_zdouble
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="cat_sz" \
+#     name=30w_linear_cat_sz
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="cat_s_zdouble" \
+#     name=30w_linear_cat_s_zdouble
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="cat_s_input_z" \
+#     name=30w_linear_cat_s_input_z
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="cat_s_input_zdouble" \
+#     name=30w_linear_cat_s_input_zdouble
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="cat_s_input_s" \
+#     name=30w_linear_cat_s_input_s
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="cat_s_input_s_z" \
+#     name=30w_linear_cat_s_input_s_z
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="cat_s_input_s_zdouble" \
+#     name=30w_linear_cat_s_input_s_zdouble
+
+# python train.py experiment=30w_pair_linear \
+#     model.strategy="cat_s_m_only_z" \
+#     name=30w_linear_cat_s_m_only_z
+
+# 50epoch rerank
+# python train.py experiment=30w_pair_rerank \
+#     name=rerank_no_screen_50epoch \
+#     trainer.max_epochs=50
+
+# triplet
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="s_input" \
+#     name=30w_triplet_s_input
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="s_input_p_only" \
+#     name=30w_triplet_s_input_p_only
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="s_input_m1_only" \
+#     name=30w_triplet_s_input_m1_only
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="s_input_m2_only" \
+#     name=30w_triplet_s_input_m2_only
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="s_input_m1_m2" \
+#     name=30w_triplet_s_input_m1_m2
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="s" \
+#     name=30w_triplet_s
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="s_p_only" \
+#     name=30w_triplet_s_p_only
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="s_m1_only" \
+#     name=30w_triplet_s_m1_only
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="s_m2_only" \
+#     name=30w_triplet_s_m2_only
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="s_m1_m2" \
+#     name=30w_triplet_s_m1_m2
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="z_pm1_pm2" \
+#     name=30w_triplet_z_pm1_pm2
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="z_pm1_only" \
+#     name=30w_triplet_z_pm1_only
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="z_pm2_only" \
+#     name=30w_triplet_z_pm2_only
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="cat_s_z_pm1_pm2" \
+#     name=30w_triplet_cat_s_z_pm1_pm2
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="cat_s_m1_m2_z_pm1_pm2" \
+#     name=30w_triplet_cat_s_m1_m2_z_pm1_pm2
+
+# python train.py experiment=30w_triplet \
+#     model.strategy="cat_s_input_m1_m2_s_m1_m2_z_pm1_pm2" \
+#     name=30w_triplet_cat_s_input_m1_m2_s_m1_m2_z_pm1_pm2
+
+# # linear probe 
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="s_input" \
+#     name=30w_triplet_linear_s_input
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="s_input_p_only" \
+#     name=30w_triplet_linear_s_input_p_only
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="s_input_m1_only" \
+#     name=30w_triplet_linear_s_input_m1_only
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="s_input_m2_only" \
+#     name=30w_triplet_linear_s_input_m2_only
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="s_input_m1_m2" \
+#     name=30w_triplet_linear_s_input_m1_m2
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="s" \
+#     name=30w_triplet_linear_s
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="s_p_only" \
+#     name=30w_triplet_linear_s_p_only
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="s_m1_only" \
+#     name=30w_triplet_linear_s_m1_only
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="s_m2_only" \
+#     name=30w_triplet_linear_s_m2_only
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="s_m1_m2" \
+#     name=30w_triplet_linear_s_m1_m2
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="z_pm1_pm2" \
+#     name=30w_triplet_linear_z_pm1_pm2
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="z_pm1_only" \
+#     name=30w_triplet_linear_z_pm1_only
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="z_pm2_only" \
+#     name=30w_triplet_linear_z_pm2_only
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="cat_s_z_pm1_pm2" \
+#     name=30w_triplet_linear_cat_s_z_pm1_pm2
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="cat_s_m1_m2_z_pm1_pm2" \
+#     name=30w_triplet_linear_cat_s_m1_m2_z_pm1_pm2
+
+# python train.py experiment=30w_triplet_linear \
+#     model.strategy="cat_s_input_m1_m2_s_m1_m2_z_pm1_pm2" \
+#     name=30w_triplet_linear_cat_s_input_m1_m2_s_m1_m2_z_pm1_pm2
+
+# diff
+
+python train.py experiment=30w_triplet \
+    model.strategy="diff_s_input" \
+    name=30w_triplet_diff_s_input
+
+python train.py experiment=30w_triplet \
+    model.strategy="diff_s" \
+    name=30w_triplet_diff_s
+
+python train.py experiment=30w_triplet \
+    model.strategy="diff_z" \
+    name=30w_triplet_diff_z
+
+python train.py experiment=30w_triplet \
+    model.strategy="diff_s_z" \
+    name=30w_triplet_diff_s_z
+
+python train.py experiment=30w_triplet \
+    model.strategy="diff_cat_s_input" \
+    name=30w_triplet_diff_cat_s_input
+
+python train.py experiment=30w_triplet \
+    model.strategy="diff_cat_s" \
+    name=30w_triplet_diff_cat_s
+
+python train.py experiment=30w_triplet \    
+    model.strategy="diff_cat_z" \
+    name=30w_triplet_diff_cat_z
+
+python train.py experiment=30w_triplet \
+    model.strategy="diff_cat_s_z" \
+    name=30w_triplet_diff_cat_s_z

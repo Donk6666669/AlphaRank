@@ -299,10 +299,14 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                     z_interact = (
                         z[:len_p, -len_m1 - len_m2 : -len_m2].clone(),  # p_m1
                         z[:len_p, -len_m2:].clone(),  # p_m2
-                        z[-len_m1:-len_m2, -len_m2:].clone(),  # m1_m2
+                        z[
+                            -len_m1 - len_m2 : -len_m2, -len_m2:
+                        ].clone(),  # m1_m2
                         z[-len_m1 - len_m2 : -len_m2, :len_p].clone(),  # m1_p
                         z[-len_m2:, :len_p].clone(),  # m2_p
-                        z[-len_m2:, -len_m1:-len_m2].clone(),  # m2_m1
+                        z[
+                            -len_m2:, -len_m1 - len_m2 : -len_m2
+                        ].clone(),  # m2_m1
                     )
                 else:
                     raise ValueError(
@@ -331,7 +335,9 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                         )
                     elif len(data["len"]) == 3:
                         s_inputs_p = s_inputs[:len_p].mean(dim=0)
-                        s_inputs_m1 = s_inputs[len_p : len_p + len_m1].mean(dim=0)
+                        s_inputs_m1 = s_inputs[len_p : len_p + len_m1].mean(
+                            dim=0
+                        )
                         s_inputs_m2 = s_inputs[len_p + len_m1 :].mean(dim=0)
                         s_p = s[:len_p].mean(dim=0)
                         s_m1 = s[len_p : len_p + len_m1].mean(dim=0)
