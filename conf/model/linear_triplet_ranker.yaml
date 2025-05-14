@@ -2,4 +2,4 @@ _target_: protenix.model.rank_model.LinearTripletRanker
 s_input_dim: 449
 s_dim: 384
 z_dim: 128
-strategy: "cat_sz"
+strategy: "cat_s_m1_m2_z_pm1_pm2"

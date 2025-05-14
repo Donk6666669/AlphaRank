@@ -282,6 +282,57 @@ class MLPPairRanker(PairRanker):
         return {"pred": pred}
 
 
+class ResidualMLPBlock(nn.Module):
+    def __init__(self, d_model, dropout=0.1):
+        super().__init__()
+        self.norm = nn.LayerNorm(d_model, eps=1e-5)
+        self.mlp = nn.Sequential(
+            nn.Linear(d_model, 4 * d_model),  # Expand to 4×
+            nn.GELU(),  # Activation
+            nn.Linear(4 * d_model, d_model),  # Project back
+            nn.Dropout(dropout),  # Dropout after final projection
+        )
+
+    def forward(self, x):
+        # Pre-LayerNorm → MLP → Residual
+        x = x + self.mlp(self.norm(x))
+        return x
+
+
+class CombinePairRanker(PairRanker):
+    def __init__(
+        self, s_input_dim=449, s_dim=384, z_dim=128, n_residue=1, dropout=0.1
+    ):
+        super().__init__(s_input_dim, s_dim, z_dim)
+        self.encoder = nn.Sequential(
+            *[ResidualMLPBlock(d_model=self.z_dim, dropout=dropout)]
+            * n_residue,
+            nn.Linear(self.z_dim, 1),
+        )
+
+    def single_forward(
+        self,
+        s_inputs_p: torch.Tensor = None,
+        s_inputs_m: torch.Tensor = None,
+        s_p: torch.Tensor = None,
+        s_m: torch.Tensor = None,
+        z_pm: torch.Tensor = None,
+        z_mp: torch.Tensor = None,
+        mask_p: torch.Tensor = None,
+        mask_m: torch.Tensor = None,
+        mask_pm: torch.Tensor = None,
+        len_p: torch.Tensor = None,
+        len_m: torch.Tensor = None,
+        **kwargs,
+    ):
+        x = self.encoder(z_pm)
+        x = x * mask_pm[..., None]
+        x = x.sum(dim=(1, 2)).squeeze()
+        return {
+            "pred": x,
+        }
+
+
 class TripletRanker(nn.Module):
     def __init__(self, s_input_dim=449, s_dim=384, z_dim=128):
         super().__init__()

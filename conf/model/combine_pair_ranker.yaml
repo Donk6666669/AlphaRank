@@ -1,0 +1,6 @@
+_target_: protenix.model.rank_model.CombinePairRanker
+s_input_dim: 449
+s_dim: 384
+z_dim: 128
+n_residue: 2
+dropout: 0.1

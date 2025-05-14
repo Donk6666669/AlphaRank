@@ -499,34 +499,160 @@
 
 # diff
 
-python train.py experiment=30w_triplet \
-    model.strategy="diff_s_input" \
-    name=30w_triplet_diff_s_input
+# python train.py experiment=30w_triplet \
+#     model.strategy="diff_s_input" \
+#     name=30w_triplet_diff_s_input
 
-python train.py experiment=30w_triplet \
-    model.strategy="diff_s" \
-    name=30w_triplet_diff_s
+# python train.py experiment=30w_triplet \
+#     model.strategy="diff_s" \
+#     name=30w_triplet_diff_s
 
-python train.py experiment=30w_triplet \
-    model.strategy="diff_z" \
-    name=30w_triplet_diff_z
+# python train.py experiment=30w_triplet \
+#     model.strategy="diff_z" \
+#     name=30w_triplet_diff_z
 
-python train.py experiment=30w_triplet \
-    model.strategy="diff_s_z" \
-    name=30w_triplet_diff_s_z
+# python train.py experiment=30w_triplet \
+#     model.strategy="diff_s_z" \
+#     name=30w_triplet_diff_s_z
 
-python train.py experiment=30w_triplet \
-    model.strategy="diff_cat_s_input" \
-    name=30w_triplet_diff_cat_s_input
+# python train.py experiment=30w_triplet \
+#     model.strategy="diff_cat_s_input" \
+#     name=30w_triplet_diff_cat_s_input
 
-python train.py experiment=30w_triplet \
-    model.strategy="diff_cat_s" \
-    name=30w_triplet_diff_cat_s
+# python train.py experiment=30w_triplet \
+#     model.strategy="diff_cat_s" \
+#     name=30w_triplet_diff_cat_s
 
-python train.py experiment=30w_triplet \    
-    model.strategy="diff_cat_z" \
-    name=30w_triplet_diff_cat_z
+# python train.py experiment=30w_triplet \    
+#     model.strategy="diff_cat_z" \
+#     name=30w_triplet_diff_cat_z
 
-python train.py experiment=30w_triplet \
-    model.strategy="diff_cat_s_z" \
-    name=30w_triplet_diff_cat_s_z
+# python train.py experiment=30w_triplet \
+#     model.strategy="diff_cat_s_z" \
+#     name=30w_triplet_diff_cat_s_z
+
+# screen / rerank
+
+# python train.py experiment=30w_triplet_rerank \
+#     name=triplet_rerank_no_screen
+
+# python train.py experiment=30w_triplet_rerank \
+#     name=triplet_rerank_3w_screen \
+#     dataset.dataset_args.train.include_screen=True \
+#     dataset.dataset_args.train.max_screen=30000
+
+# python train.py experiment=30w_triplet_rerank \
+#     name=triplet_rerank_6w_screen \
+#     dataset.dataset_args.train.include_screen=True \
+#     dataset.dataset_args.train.max_screen=60000
+
+# python train.py experiment=30w_triplet_rerank \
+#     name=triplet_rerank_9w_screen \
+#     dataset.dataset_args.train.include_screen=True \
+#     dataset.dataset_args.train.max_screen=90000
+
+# python train.py experiment=30w_triplet_rerank \
+#     name=triplet_rerank_12w_screen \
+#     dataset.dataset_args.train.include_screen=True \
+#     dataset.dataset_args.train.max_screen=120000
+
+# python train.py experiment=30w_triplet_rerank \
+#     name=triplet_rerank_15w_screen \
+#     dataset.dataset_args.train.include_screen=True \
+#     dataset.dataset_args.train.max_screen=150000
+
+# python train.py experiment=30w_triplet_screen \
+#     name=triplet_screen_no_rerank
+
+# python train.py experiment=30w_triplet_screen \
+#     name=triplet_screen_3w_rerank \
+#     dataset.dataset_args.train.include_rerank=True \
+#     dataset.dataset_args.train.max_rerank=30000
+
+# python train.py experiment=30w_triplet_screen \
+#     name=triplet_screen_6w_rerank \
+#     dataset.dataset_args.train.include_rerank=True \
+#     dataset.dataset_args.train.max_rerank=60000
+
+# python train.py experiment=30w_triplet_screen \
+#     name=triplet_screen_9w_rerank \
+#     dataset.dataset_args.train.include_rerank=True \
+#     dataset.dataset_args.train.max_rerank=90000
+
+# python train.py experiment=30w_triplet_screen \
+#     name=triplet_screen_12w_rerank \
+#     dataset.dataset_args.train.include_rerank=True \
+#     dataset.dataset_args.train.max_rerank=120000
+
+# python train.py experiment=30w_triplet_screen \
+#     name=triplet_screen_15w_rerank \
+#     dataset.dataset_args.train.include_rerank=True \
+#     dataset.dataset_args.train.max_rerank=150000
+
+# # refine agg
+# python train.py experiment=3w_pair_combine \
+#     model.n_residue=0 \
+#     optim.lr=1e-3 \
+#     name=3w_pair_combine_0res_1e3
+
+# python train.py experiment=3w_pair_combine \
+#     model.n_residue=0 \
+#     optim.lr=2e-4 \
+#     name=3w_pair_combine_0res_2e4
+
+# python train.py experiment=3w_pair_combine \
+#     model.n_residue=0 \
+#     optim.lr=1e-4 \
+#     name=3w_pair_combine_0res_1e4
+
+# python train.py experiment=3w_pair_combine \
+#     model.n_residue=0 \
+#     optim.lr=2e-5 \
+#     name=3w_pair_combine_0res_2e5
+
+# python train.py experiment=3w_pair_combine \
+#     model.n_residue=1 \
+#     optim.lr=1e-3 \
+#     name=3w_pair_combine_1res_1e3
+
+# python train.py experiment=3w_pair_combine \
+#     model.n_residue=1 \
+#     optim.lr=2e-4 \
+#     name=3w_pair_combine_1res_2e4
+
+# python train.py experiment=3w_pair_combine \
+#     model.n_residue=1 \
+#     optim.lr=1e-4 \
+#     name=3w_pair_combine_1res_1e4
+
+# python train.py experiment=3w_pair_combine \
+#     model.n_residue=1 \
+#     optim.lr=2e-5 \
+#     name=3w_pair_combine_1res_2e5
+
+# python train.py experiment=3w_pair_combine \
+#     model.n_residue=2 \
+#     optim.lr=1e-3 \
+#     name=3w_pair_combine_2res_1e3
+
+# python train.py experiment=3w_pair_combine \
+#     model.n_residue=2 \
+#     optim.lr=2e-4 \
+#     name=3w_pair_combine_2res_2e4
+
+# python train.py experiment=3w_pair_combine \
+#     model.n_residue=2 \
+#     optim.lr=1e-4 \
+#     name=3w_pair_combine_2res_1e4
+
+# python train.py experiment=3w_pair_combine \
+#     model.n_residue=2 \
+#     optim.lr=2e-5 \
+#     name=3w_pair_combine_2res_2e5
+
+
+python train.py experiment=3w_pair_combine_rerank \
+    name=3w_pair_combine_rerank_no_screen
+
+python train.py experiment=3w_pair_combine_rerank \
+    name=3w_pair_combine_rerank_no_screen

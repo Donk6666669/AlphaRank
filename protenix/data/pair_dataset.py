@@ -3,10 +3,12 @@ from typing import List, Union, Dict, Any, Optional
 from functools import lru_cache
 
 import torch
+import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from hydra.utils import instantiate
 from lightning import LightningDataModule
 from torch.utils.data.dataloader import default_collate
+from torch.nn.utils.rnn import pad_sequence
 
 from protenix.utils.lmdb import LMDBDataset
 from protenix.utils.logger import get_logger
@@ -164,13 +166,125 @@ class PairDataset(DatasetBase):
             return None
 
 
+class FullPairDataset(PairDataset):
+    def parse_feat(self, feat_key):
+        data = self.lmdb_list[self.keys2lmdbidx[feat_key]][feat_key]
+        s_inputs, s, (z_pm, _) = data
+        len_p, len_m = z_pm.shape[0], z_pm.shape[1]
+        # s_inputs_p = s_inputs[:len_p]
+        # s_inputs_m = s_inputs[len_p:]
+        # s_p = s[:len_p]
+        # s_m = s[len_p:]
+        res = {
+            # "s_inputs_p": s_inputs_p.float(),
+            # "s_inputs_m": s_inputs_m.float(),
+            # "s_p": s_p.float(),
+            # "s_m": s_m.float(),
+            "z_pm": z_pm.float(),
+            "len_p": len_p,
+            "len_m": len_m,
+            # "mask_p": torch.ones(len_p, dtype=torch.bool),
+            # "mask_m": torch.ones(len_m, dtype=torch.bool),
+            "mask_pm": torch.ones(len_p, len_m, dtype=torch.bool),
+        }
+        return res
+
+    def collate_fn(self, batch):
+        valid_batch = [b for b in batch if b is not None]
+
+        def process_pm(pm_list):
+            # s_inputs_p = [pm["s_inputs_p"] for pm in pm_list]
+            # s_inputs_m = [pm["s_inputs_m"] for pm in pm_list]
+            # s_p = [pm["s_p"] for pm in pm_list]
+            # s_m = [pm["s_m"] for pm in pm_list]
+            z_pm = [pm["z_pm"] for pm in pm_list]
+            lens_p = [pm["len_p"] for pm in pm_list]
+            lens_m = [pm["len_m"] for pm in pm_list]
+            # masks_p = [pm["mask_p"] for pm in pm_list]
+            # masks_m = [pm["mask_m"] for pm in pm_list]
+            masks_pm = [pm["mask_pm"] for pm in pm_list]
+
+            max_p = max(lens_p)
+            max_m = max(lens_m)
+
+            # padded_s_inputs_p = pad_sequence(s_inputs_p, batch_first=True)
+            # padded_s_inputs_m = pad_sequence(s_inputs_m, batch_first=True)
+            # padded_s_p = pad_sequence(s_p, batch_first=True)
+            # padded_s_m = pad_sequence(s_m, batch_first=True)
+
+            padded_z_pm = torch.stack(
+                [
+                    F.pad(
+                        mat,
+                        (0, 0, 0, max_m - mat.size(1), 0, max_p - mat.size(0)),
+                        value=0,
+                    )
+                    for mat in z_pm
+                ]
+            )  # (batch, max_p, max_m)
+
+            # padded_masks_p = pad_sequence(
+            #     masks_p, batch_first=True, padding_value=False
+            # )  # (batch, max_p)
+            # padded_masks_m = pad_sequence(
+            #     masks_m, batch_first=True, padding_value=False
+            # )  # (batch, max_m)
+            padded_masks_pm = torch.stack(
+                [
+                    F.pad(
+                        mat,
+                        (0, max_m - mat.size(1), 0, max_p - mat.size(0)),
+                        value=False,
+                    )
+                    for mat in masks_pm
+                ]
+            )  # (batch, max_p, max_m)
+
+            return {
+                # "s_inputs_p": padded_s_inputs_p,
+                # "s_inputs_m": padded_s_inputs_m,
+                # "s_p": padded_s_p,
+                # "s_m": padded_s_m,
+                "z_pm": padded_z_pm,
+                # "mask_p": padded_masks_p,
+                # "mask_m": padded_masks_m,
+                "mask_pm": padded_masks_pm,
+                "len_p": torch.tensor(lens_p),
+                "len_m": torch.tensor(lens_m),
+            }
+
+        pm1_list = [item["pm1"] for item in valid_batch]
+        pm2_list = [item["pm2"] for item in valid_batch]
+
+        collated_pm1 = process_pm(pm1_list)
+        collated_pm2 = process_pm(pm2_list)
+
+        labels = torch.tensor(
+            [item["label"] for item in valid_batch], dtype=torch.float
+        )
+        hards = torch.tensor(
+            [item["hard"] for item in valid_batch], dtype=torch.bool
+        )
+        idxs = torch.tensor(
+            [item["idx"] for item in valid_batch], dtype=torch.long
+        )
+
+        return {
+            "pm1": collated_pm1,
+            "pm2": collated_pm2,
+            "label": labels,
+            "hard": hards,
+            "idx": idxs,
+        }
+
+
 class FullReducePairDataset(PairDataset):
 
     @lru_cache(maxsize=None)
     def parse_feat(self, feat_key):
         data = self.lmdb_list[self.keys2lmdbidx[feat_key]][feat_key]
         s_inputs, s, (z_pm, z_mp) = data
-        len_p, len_m = z_pm.shape[0], z_mp.shape[1]
+        len_p = z_pm.shape[0]
         s_inputs_p = s_inputs[:len_p].mean(dim=0)
         s_inputs_m = s_inputs[len_p:].mean(dim=0)
         s_p = s[:len_p].mean(dim=0)
