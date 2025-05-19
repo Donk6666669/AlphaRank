@@ -163,6 +163,7 @@ class PairDataset(DatasetBase):
             res["idx"] = idx
             return res
         except Exception:
+            logger.exception(f"Failed to parse pair {idx}")
             return None
 
 
@@ -173,13 +174,17 @@ class FullPairDataset(PairDataset):
         len_p, len_m = z_pm.shape[0], z_pm.shape[1]
         # s_inputs_p = s_inputs[:len_p]
         # s_inputs_m = s_inputs[len_p:]
-        # s_p = s[:len_p]
-        # s_m = s[len_p:]
+        s_p = s[:len_p]
+        s_m = s[len_p:]
+        assert (
+            len_m == s_m.shape[0]
+        ), f"len_m: {len_m} != s_m.shape[0]: {s_m.shape[0]} for {feat_key}"
+
         res = {
             # "s_inputs_p": s_inputs_p.float(),
             # "s_inputs_m": s_inputs_m.float(),
-            # "s_p": s_p.float(),
-            # "s_m": s_m.float(),
+            "s_p": s_p.float(),
+            "s_m": s_m.float(),
             "z_pm": z_pm.float(),
             "len_p": len_p,
             "len_m": len_m,
@@ -193,10 +198,11 @@ class FullPairDataset(PairDataset):
         valid_batch = [b for b in batch if b is not None]
 
         def process_pm(pm_list):
+            bz = len(pm_list)
             # s_inputs_p = [pm["s_inputs_p"] for pm in pm_list]
             # s_inputs_m = [pm["s_inputs_m"] for pm in pm_list]
-            # s_p = [pm["s_p"] for pm in pm_list]
-            # s_m = [pm["s_m"] for pm in pm_list]
+            s_p = [pm["s_p"] for pm in pm_list]
+            s_m = [pm["s_m"] for pm in pm_list]
             z_pm = [pm["z_pm"] for pm in pm_list]
             lens_p = [pm["len_p"] for pm in pm_list]
             lens_m = [pm["len_m"] for pm in pm_list]
@@ -211,6 +217,11 @@ class FullPairDataset(PairDataset):
             # padded_s_inputs_m = pad_sequence(s_inputs_m, batch_first=True)
             # padded_s_p = pad_sequence(s_p, batch_first=True)
             # padded_s_m = pad_sequence(s_m, batch_first=True)
+            padded_s_p = torch.zeros((bz, max_p, s_p[0].size(1))).to(s_p[0])
+            padded_s_m = torch.zeros((bz, max_m, s_m[0].size(1))).to(s_m[0])
+            for i in range(bz):
+                padded_s_p[i, : lens_p[i], :] = s_p[i]
+                padded_s_m[i, : lens_m[i], :] = s_m[i]
 
             padded_z_pm = torch.stack(
                 [
@@ -229,6 +240,11 @@ class FullPairDataset(PairDataset):
             # padded_masks_m = pad_sequence(
             #     masks_m, batch_first=True, padding_value=False
             # )  # (batch, max_m)
+            # padded_mask_pm = torch.bmm(
+            #     padded_masks_p.unsqueeze(2).float(),
+            #     padded_masks_m.unsqueeze(1).float(),
+            # )
+            # padded_masks_pm = (padded_mask_pm > 0)  # (batch, max_p, max_m)
             padded_masks_pm = torch.stack(
                 [
                     F.pad(
@@ -243,8 +259,8 @@ class FullPairDataset(PairDataset):
             return {
                 # "s_inputs_p": padded_s_inputs_p,
                 # "s_inputs_m": padded_s_inputs_m,
-                # "s_p": padded_s_p,
-                # "s_m": padded_s_m,
+                "s_p": padded_s_p,
+                "s_m": padded_s_m,
                 "z_pm": padded_z_pm,
                 # "mask_p": padded_masks_p,
                 # "mask_m": padded_masks_m,
@@ -291,6 +307,9 @@ class FullReducePairDataset(PairDataset):
         s_m = s[len_p:].mean(dim=0)
         z_pm = z_pm.mean(dim=(0, 1))
         z_mp = z_mp.mean(dim=(0, 1))
+        assert (
+            len_p == s_m.shape[0]
+        ), f"len_m: {len_p} != s_m.shape[0]: {s_m.shape[0]} for {feat_key}"
         res = {
             "s_inputs_p": s_inputs_p.float(),
             "s_inputs_m": s_inputs_m.float(),
@@ -382,6 +401,12 @@ class FullReduceTripletDataset(TripletDataset):
         z_pm1 = z_pm1.mean(dim=(0, 1))
         z_pm2 = z_pm2.mean(dim=(0, 1))
         z_m1m2 = z_m1m2.mean(dim=(0, 1))
+
+        assert (
+            len_p + len_m1 + len_m2 == z_pm1.shape[0],
+            f"len sum: {len_p + len_m1 + len_m2} != z_pm1.shape[0]: "
+            f"{z_pm1.shape[0]} for {feat_key}",
+        )
 
         if reverse_m1m2:
             res = {

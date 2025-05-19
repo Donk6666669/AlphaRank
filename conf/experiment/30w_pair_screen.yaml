@@ -7,8 +7,9 @@ defaults:
   - override /callbacks: [checkpoint_screen, lr_monitor, rich, summary]
 
 dataset:
-  train:
-    include_screen: true
-    max_screen: null
-    include_rerank: false
-    max_rerank: null
+  dataset_args:
+    train:
+      include_screen: true
+      max_screen: null
+      include_rerank: false
+      max_rerank: null

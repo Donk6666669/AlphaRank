@@ -1,0 +1,34 @@
+_target_: protenix.data.pair_dataset.DataModule
+num_workers: 32
+pin_memory: True
+batch_size: 1024
+dataset_args:
+  train:
+    _target_: protenix.data.pair_dataset.FullReduceTripletDataset
+    meta_path: /data/rerank/protenix/chembl_bdb/chembl_bdb_meta.lmdb
+    meta_split: train_3w_60
+    feat_lmdb_path:
+      - /data/rerank/protenix/chembl_bdb/sample_3w/triplet/sample_3w_triplet_1.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/triplet/sample_3w_triplet_2.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/triplet/sample_3w_triplet_3.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/triplet/sample_3w_triplet_4.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/triplet/sample_3w_triplet_5.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/triplet/sample_3w_triplet_6.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet/sample_val_triplet_1.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet/sample_val_triplet_2.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet/sample_val_triplet_3.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet/sample_val_triplet_4.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet/sample_val_triplet_5.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet/sample_val_triplet_6.lmdb
+    feat_split: full_triplet
+    include_screen: true
+    max_screen: null
+    include_rerank: true
+    max_rerank: null
+  val:
+    _target_: protenix.data.pair_dataset.FullReduceTripletDataset
+    meta_path: /data/rerank/protenix/chembl_bdb/chembl_bdb_meta.lmdb
+    meta_split: val_5k
+    feat_lmdb_path:
+      - /data/rerank/protenix/chembl_bdb/sample_val/sample_val_triplet.lmdb
+    feat_split: full_triplet

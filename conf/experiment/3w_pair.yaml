@@ -1,0 +1,6 @@
+# @package _global_
+name: 3w_pair
+notes: "Training on 30w pair data"
+
+defaults:
+  - override /dataset: 3w_pair

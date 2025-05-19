@@ -58,7 +58,7 @@ class Protenix(nn.Module):
 
         # Some constants
         # self.N_cycle = self.configs.model.N_cycle
-        self.N_cycle = 5
+        self.N_cycle = 1
         self.N_model_seed = self.configs.model.N_model_seed
         self.train_confidence_only = configs.train_confidence_only
         if self.train_confidence_only:  # the final finetune stage

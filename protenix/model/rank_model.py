@@ -283,13 +283,13 @@ class MLPPairRanker(PairRanker):
 
 
 class ResidualMLPBlock(nn.Module):
-    def __init__(self, d_model, dropout=0.1):
+    def __init__(self, d_model, dropout=0.1, multiply=4):
         super().__init__()
         self.norm = nn.LayerNorm(d_model, eps=1e-5)
         self.mlp = nn.Sequential(
-            nn.Linear(d_model, 4 * d_model),  # Expand to 4×
+            nn.Linear(d_model, multiply * d_model),  # Expand to 4×
             nn.GELU(),  # Activation
-            nn.Linear(4 * d_model, d_model),  # Project back
+            nn.Linear(multiply * d_model, d_model),  # Project back
             nn.Dropout(dropout),  # Dropout after final projection
         )
 
@@ -301,14 +301,59 @@ class ResidualMLPBlock(nn.Module):
 
 class CombinePairRanker(PairRanker):
     def __init__(
-        self, s_input_dim=449, s_dim=384, z_dim=128, n_residue=1, dropout=0.1
+        self,
+        s_input_dim=449,
+        s_dim=384,
+        z_dim=128,
+        n_residue=1,
+        dropout=0.1,
+        strategy="from_z",
     ):
         super().__init__(s_input_dim, s_dim, z_dim)
-        self.encoder = nn.Sequential(
-            *[ResidualMLPBlock(d_model=self.z_dim, dropout=dropout)]
-            * n_residue,
-            nn.Linear(self.z_dim, 1),
-        )
+        self.strategy = strategy
+        if self.strategy == "from_z":
+            self.encoder = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.z_dim, dropout=dropout)]
+                * n_residue,
+                nn.Linear(self.z_dim, 1),
+            )
+        elif self.strategy == "from_s":
+            self.encoder_s_p = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+            )
+            self.encoder_s_m = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+            )
+            self.encoder_s_pm = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+            )
+            self.encoder_agg = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+                nn.Linear(self.s_dim, 1),
+            )
+        elif self.strategy == "from_sz":
+            self.encoder_s_p = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+            )
+            self.encoder_s_m = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+            )
+            self.encoder_z = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.z_dim, dropout=dropout)]
+                * n_residue,
+                nn.Linear(self.z_dim, self.s_dim),
+            )
+            self.encoder_agg = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+                nn.Linear(self.s_dim, 1),
+            )
 
     def single_forward(
         self,
@@ -325,7 +370,33 @@ class CombinePairRanker(PairRanker):
         len_m: torch.Tensor = None,
         **kwargs,
     ):
-        x = self.encoder(z_pm)
+        if self.strategy == "from_z":
+            x = self.encoder(z_pm)
+        elif self.strategy == "from_s":
+            x = self.encoder_agg(
+                torch.einsum(
+                    "bpik,bimk->bpmk",
+                    self.encoder_s_p(s_p).unsqueeze(2),  # bz, len_p, 1, s_dim
+                    self.encoder_s_m(s_m).unsqueeze(1),  # bz, 1, len_m, s_dim
+                )
+                * self.encoder_s_pm(
+                    torch.einsum(
+                        "bpik,bimk->bpmk",
+                        s_p.unsqueeze(2),  # bz, len_p, 1, s_dim
+                        s_m.unsqueeze(1),  # bz, 1, len_m, s_dim
+                    )
+                )  # bz, len_p, len_m, s_dim
+            )  # bz, len_p, len_m, 1
+        elif self.strategy == "from_sz":
+            x = self.encoder_agg(
+                torch.einsum(
+                    "bpik,bimk->bpmk",
+                    self.encoder_s_p(s_p).unsqueeze(2),  # bz, len_p, 1, s_dim
+                    self.encoder_s_m(s_m).unsqueeze(1),  # bz, 1, len_m, s_dim
+                )
+                * self.encoder_z(z_pm)  # bz, len_p, len_m, s_dim
+            )  # bz, len_p, len_m, 1
+
         x = x * mask_pm[..., None]
         x = x.sum(dim=(1, 2)).squeeze()
         return {

@@ -6,14 +6,14 @@ defaults:
   - override /dataset: 3w_pair_ori
   - override /model: combine_pair_ranker
   - override /criterion: rank
-  - override /callbacks: [checkpoint_rerank, lr_monitor, rich, summary]
+  - override /callbacks: [checkpoint_screen, lr_monitor, rich, summary]
 
 dataset:
   dataset_args:
     train:
-      include_screen: false
+      include_screen: true
       max_screen: null
-      include_rerank: true
+      include_rerank: false
       max_rerank: null
 
 optim:

@@ -651,8 +651,148 @@
 #     name=3w_pair_combine_2res_2e5
 
 
-python train.py experiment=3w_pair_combine_rerank \
-    name=3w_pair_combine_rerank_no_screen
+# python train.py experiment=3w_pair_combine_rerank \
+#     name=3w_pair_combine_rerank_no_screen
 
-python train.py experiment=3w_pair_combine_rerank \
-    name=3w_pair_combine_rerank_no_screen
+# python train.py experiment=3w_pair_combine_screen \
+#     name=3w_pair_combine_screen_no_rerank
+
+# python train.py experiment=3w_pair_combine_rerank_5recycle \
+#     name=3w_pair_combine_rerank_no_screen_5recycle
+
+# python train.py experiment=3w_pair_combine_screen_5recycle \
+#     name=3w_pair_combine_screen_no_rerank_5recycle
+
+# lr
+
+# python train.py experiment=3w_pair_combine_rerank \
+#     optim.lr=1e-4 \
+#     name=3w_pair_combine_rerank_no_screen_1e4
+
+# python train.py experiment=3w_pair_combine_screen \
+#     optim.lr=1e-4 \
+#     name=3w_pair_combine_screen_no_rerank_1e4
+
+# python train.py experiment=3w_pair_combine_rerank_5recycle \
+#     optim.lr=1e-4 \
+#     name=3w_pair_combine_rerank_no_screen_5recycle_1e4
+
+# python train.py experiment=3w_pair_combine_screen_5recycle \
+#     optim.lr=1e-4 \
+#     name=3w_pair_combine_screen_no_rerank_5recycle_1e4
+
+# python train.py experiment=3w_pair_combine_rerank \
+#     optim.lr=2e-5 \
+#     name=3w_pair_combine_rerank_no_screen_2e5
+
+# python train.py experiment=3w_pair_combine_screen \
+#     optim.lr=2e-5 \
+#     name=3w_pair_combine_screen_no_rerank_2e5
+
+# python train.py experiment=3w_pair_combine_rerank_5recycle \
+#     optim.lr=2e-5 \
+#     name=3w_pair_combine_rerank_no_screen_5recycle_2e5
+
+# python train.py experiment=3w_pair_combine_screen_5recycle \
+#     optim.lr=2e-5 \
+#     name=3w_pair_combine_screen_no_rerank_5recycle_2e5
+
+# # from s
+# python train.py experiment=3w_pair_combine \
+#     model.strategy="from_s" \
+#     dataset.batch_size=14 \
+#     name=3w_pair_combine_from_s
+
+# python train.py experiment=3w_pair_combine_rerank \
+#     model.strategy="from_s" \
+#     dataset.batch_size=16 \
+#     name=3w_pair_combine_rerank_from_s
+
+# python train.py experiment=3w_pair_combine_screen \
+#     model.strategy="from_s" \
+#     dataset.batch_size=16 \
+#     name=3w_pair_combine_screen_from_s
+
+# # from sz
+# python train.py experiment=3w_pair_combine \
+#     model.strategy="from_sz" \
+#     dataset.batch_size=16 \
+#     name=3w_pair_combine_from_sz
+
+# python train.py experiment=3w_pair_combine_rerank \
+#     model.strategy="from_sz" \
+#     dataset.batch_size=16 \
+#     name=3w_pair_combine_rerank_from_sz
+
+# python train.py experiment=3w_pair_combine_screen \
+#     model.strategy="from_sz" \
+#     dataset.batch_size=16 \
+#     name=3w_pair_combine_screen_from_sz
+
+# different identity, triplet, rerank / screen, 11
+python train.py experiment=3w_triplet \
+    name=3w_triplet
+
+python train.py experiment=3w_triplet \
+    dataset=3w_triplet_60 \
+    name=3w_triplet_60
+
+python train.py experiment=3w_triplet \
+    dataset=3w_triplet_100 \
+    name=3w_triplet_100
+
+python train.py experiment=3w_triplet_rerank \
+    name=3w_triplet_rerank
+
+python train.py experiment=3w_triplet_rerank \
+    dataset=3w_triplet_60 \
+    name=3w_triplet_rerank_60
+
+python train.py experiment=3w_triplet_rerank \
+    dataset=3w_triplet_100 \
+    name=3w_triplet_rerank_100
+
+python train.py experiment=3w_triplet_screen \
+    name=3w_triplet_screen
+
+python train.py experiment=3w_triplet_screen \
+    dataset=3w_triplet_60 \
+    name=3w_triplet_screen_60
+
+python train.py experiment=3w_triplet_screen \
+    dataset=3w_triplet_100 \
+    name=3w_triplet_screen_100
+
+# different identity, pair, rerank / screen, 18
+python train.py experiment=3w_pair \
+    name=3w_pair
+
+python train.py experiment=3w_pair \
+    dataset=3w_pair_60 \
+    name=3w_pair_60
+
+python train.py experiment=3w_pair \
+    dataset=3w_pair_100 \
+    name=3w_pair_100
+
+python train.py experiment=3w_pair_rerank \
+    name=3w_pair_rerank
+
+python train.py experiment=3w_pair_rerank \
+    dataset=3w_pair_60 \
+    name=3w_pair_rerank_60
+
+python train.py experiment=3w_pair_rerank \
+    dataset=3w_pair_100 \
+    name=3w_pair_rerank_100
+
+python train.py experiment=3w_pair_screen \
+    name=3w_pair_screen
+
+python train.py experiment=3w_pair_screen \
+    dataset=3w_pair_60 \
+    name=3w_pair_screen_60
+
+python train.py experiment=3w_pair_screen \
+    dataset=3w_pair_100 \
+    name=3w_pair_screen_100
