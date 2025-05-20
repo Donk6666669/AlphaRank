@@ -708,73 +708,351 @@
 #     --start 224000
 
 # sample val 30w triplet additional
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_8.lmdb \
-    --reduce \
-    --start 256000 \
-    --end 261500
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_8.lmdb \
+#     --reduce \
+#     --start 256000 \
+#     --end 261500
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_2.lmdb \
-    --reduce \
-    --start 261500 \
-    --end 267000
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_2.lmdb \
+#     --reduce \
+#     --start 261500 \
+#     --end 267000
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_3.lmdb \
-    --reduce \
-    --start 267000 \
-    --end 272500
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_3.lmdb \
+#     --reduce \
+#     --start 267000 \
+#     --end 272500
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_4.lmdb \
-    --reduce \
-    --start 272500 \
-    --end 278000
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_4.lmdb \
+#     --reduce \
+#     --start 272500 \
+#     --end 278000
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_5.lmdb \
-    --reduce \
-    --start 278000 \
-    --end 283500
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_5.lmdb \
+#     --reduce \
+#     --start 278000 \
+#     --end 283500
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_6.lmdb \
-    --reduce \
-    --start 283500 \
-    --end 289000
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_6.lmdb \
+#     --reduce \
+#     --start 283500 \
+#     --end 289000
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_7.lmdb \
-    --reduce \
-    --start 289000 \
-    --end 294500
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_7.lmdb \
+#     --reduce \
+#     --start 289000 \
+#     --end 294500
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_30w/sample_val_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_30w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_1.lmdb \
+#     --reduce \
+#     --start 294500
+
+# fixed 3w triplet
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/triplet_v2/block_1.lmdb \
+#     --start 0 \
+#     --end 3750
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/triplet_v2/block_2.lmdb \
+#     --start 3750 \
+#     --end 7500
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/triplet_v2/block_3.lmdb \
+#     --start 7500 \
+#     --end 11250
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/triplet_v2/block_4.lmdb \
+#     --start 11250 \
+#     --end 15000
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/triplet_v2/block_5.lmdb \
+#     --start 15000 \
+#     --end 18750
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/triplet_v2/block_6.lmdb \
+#     --start 18750 \
+#     --end 22500
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/triplet_v2/block_7.lmdb \
+#     --start 22500 \
+#     --end 26250
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/triplet_v2/block_8.lmdb \
+#     --start 26250
+
+
+# # fixed, sample val pair
+# CUDA_VISIBLE_DEVICES=6 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val/sample_val_pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val/sample_val_pair_v2.lmdb
+
+# # fixed, sample val triplet
+# CUDA_VISIBLE_DEVICES=7 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val/sample_val_triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val/sample_val_triplet_v2.lmdb
+
+# # fixed, sample 3w pair
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_1.lmdb \
+#     --start 0 \
+#     --end 4375
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_2.lmdb \
+#     --start 4375 \
+#     --end 8750
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_3.lmdb \
+#     --start 8750 \
+#     --end 13125
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_4.lmdb \
+#     --start 13125 \
+#     --end 17500
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_5.lmdb \
+#     --start 17500 \
+#     --end 21875
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_6.lmdb \
+#     --start 21875 \
+#     --end 26250
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_7.lmdb \
+#     --start 26250 \
+#     --end 30625
+
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w/sample_3w_pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_8.lmdb \
+#     --start 30625
+
+
+# fixed, sample val 3w triplet
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_triplet.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
     --seeds 101 \
     --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_30w/triplet/sample_val_triplet_1.lmdb \
-    --reduce \
-    --start 294500
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet_v2/block_1.lmdb \
+    --start 0 \
+    --end 3750
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_triplet.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet_v2/block_2.lmdb \
+    --start 3750 \
+    --end 7500
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_triplet.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet_v2/block_3.lmdb \
+    --start 7500 \
+    --end 11250
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_triplet.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet_v2/block_4.lmdb \
+    --start 11250 \
+    --end 15000
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_triplet.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet_v2/block_5.lmdb \
+    --start 15000 \
+    --end 18750
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_triplet.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet_v2/block_6.lmdb \
+    --start 18750 \
+    --end 22500
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_triplet.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet_v2/block_7.lmdb \
+    --start 22500 \
+    --end 26250
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_triplet.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/triplet_v2/block_8.lmdb \
+    --start 26250
+
+
+
+# sample val 3w pair
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_pair.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_1.lmdb \
+    --start 0 \
+    --end 4375
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_pair.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_2.lmdb \
+    --start 4375 \
+    --end 8750
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_pair.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_3.lmdb \
+    --start 8750 \
+    --end 13125
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_pair.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_4.lmdb \
+    --start 13125 \
+    --end 17500
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_pair.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_5.lmdb \
+    --start 17500 \
+    --end 21875
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_pair.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_6.lmdb \
+    --start 21875 \
+    --end 26250
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_pair.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_7.lmdb \
+    --start 26250 \
+    --end 30625
+
+protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_3w/sample_val_pair.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_3w/output \
+    --seeds 101 \
+    --use_msa_server \
+    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_8.lmdb \
+    --start 30625
+

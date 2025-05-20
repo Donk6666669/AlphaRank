@@ -286,26 +286,40 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                 runner.update_model_configs(new_configs)
                 prediction = runner.predict(data)
                 s_inputs, s, z = prediction
-                if len(data["len"]) == 2:
-                    len_p, len_m = data["len"]
+                entity_id = data["input_feature_dict"]["entity_id"]
+                n_entity = entity_id.unique().numel()
+                if n_entity == 2:
+                    len_p, len_m = entity_id.unique(return_counts=True)[
+                        1
+                    ].tolist()
+                    assert (
+                        len_p + len_m == z.shape[0]
+                    ), f"len_p {len_p}, len_m {len_m}, z.shape[0] {z.shape[0]}"
+
                     z_interact = (
-                        z[:len_p, -len_m:].clone(),  # p_m
-                        z[-len_m:, :len_p].clone(),  # m_p
+                        z[:len_p, len_p:].clone(),  # p_m
+                        z[len_p:, :len_p].clone(),  # m_p
                     )
-                elif len(data["len"]) == 3:
-                    len_p, len_m1, len_m2 = data["len"]
+                elif n_entity == 3:
+                    len_p, len_m1, len_m2 = entity_id.unique(
+                        return_counts=True
+                    )[1].tolist()
+                    assert len_p + len_m1 + len_m2 == z.shape[0], (
+                        f"len_p {len_p}, len_m1 {len_m1}, len_m2 {len_m2}, "
+                        f"z.shape[0] {z.shape[0]}"
+                    )
                     # z = [p+m1+m2, p+m1+m2]
                     # interact = p_m1, p_m2, m1_m2, m1_p, m2_p, m2_m1
                     z_interact = (
-                        z[:len_p, -len_m1 - len_m2 : -len_m2].clone(),  # p_m1
-                        z[:len_p, -len_m2:].clone(),  # p_m2
+                        z[:len_p, len_p : len_p + len_m1].clone(),  # p_m1
+                        z[:len_p, len_p + len_m1 :].clone(),  # p_m2
                         z[
-                            -len_m1 - len_m2 : -len_m2, -len_m2:
+                            len_p : len_p + len_m1, len_p + len_m1 :
                         ].clone(),  # m1_m2
-                        z[-len_m1 - len_m2 : -len_m2, :len_p].clone(),  # m1_p
-                        z[-len_m2:, :len_p].clone(),  # m2_p
+                        z[len_p : len_p + len_m1, :len_p].clone(),  # m1_p
+                        z[len_p + len_m1 :, :len_p].clone(),  # m2_p
                         z[
-                            -len_m2:, -len_m1 - len_m2 : -len_m2
+                            len_p + len_m1 :, len_p : len_p + len_m1
                         ].clone(),  # m2_m1
                     )
                 else:

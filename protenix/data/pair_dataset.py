@@ -300,16 +300,16 @@ class FullReducePairDataset(PairDataset):
     def parse_feat(self, feat_key):
         data = self.lmdb_list[self.keys2lmdbidx[feat_key]][feat_key]
         s_inputs, s, (z_pm, z_mp) = data
-        len_p = z_pm.shape[0]
+        len_p, len_m, _ = z_pm.shape
+        assert (
+            len_p + len_m == s.shape[0]
+        ), f"length mismatch: {len_p} + {len_m} != {s.shape[0]} for {feat_key}"
         s_inputs_p = s_inputs[:len_p].mean(dim=0)
         s_inputs_m = s_inputs[len_p:].mean(dim=0)
         s_p = s[:len_p].mean(dim=0)
         s_m = s[len_p:].mean(dim=0)
         z_pm = z_pm.mean(dim=(0, 1))
         z_mp = z_mp.mean(dim=(0, 1))
-        assert (
-            len_p == s_m.shape[0]
-        ), f"len_m: {len_p} != s_m.shape[0]: {s_m.shape[0]} for {feat_key}"
         res = {
             "s_inputs_p": s_inputs_p.float(),
             "s_inputs_m": s_inputs_m.float(),

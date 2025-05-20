@@ -730,38 +730,38 @@
 #     name=3w_pair_combine_screen_from_sz
 
 # different identity, triplet, rerank / screen, 11
-python train.py experiment=3w_triplet \
-    name=3w_triplet
+# python train.py experiment=3w_triplet \
+#     name=3w_triplet
 
-python train.py experiment=3w_triplet \
-    dataset=3w_triplet_60 \
-    name=3w_triplet_60
+# python train.py experiment=3w_triplet \
+#     dataset=3w_triplet_60 \
+#     name=3w_triplet_60
 
-python train.py experiment=3w_triplet \
-    dataset=3w_triplet_100 \
-    name=3w_triplet_100
+# python train.py experiment=3w_triplet \
+#     dataset=3w_triplet_100 \
+#     name=3w_triplet_100
 
-python train.py experiment=3w_triplet_rerank \
-    name=3w_triplet_rerank
+# python train.py experiment=3w_triplet_rerank \
+#     name=3w_triplet_rerank
 
-python train.py experiment=3w_triplet_rerank \
-    dataset=3w_triplet_60 \
-    name=3w_triplet_rerank_60
+# python train.py experiment=3w_triplet_rerank \
+#     dataset=3w_triplet_60 \
+#     name=3w_triplet_rerank_60
 
-python train.py experiment=3w_triplet_rerank \
-    dataset=3w_triplet_100 \
-    name=3w_triplet_rerank_100
+# python train.py experiment=3w_triplet_rerank \
+#     dataset=3w_triplet_100 \
+#     name=3w_triplet_rerank_100
 
-python train.py experiment=3w_triplet_screen \
-    name=3w_triplet_screen
+# python train.py experiment=3w_triplet_screen \
+#     name=3w_triplet_screen
 
-python train.py experiment=3w_triplet_screen \
-    dataset=3w_triplet_60 \
-    name=3w_triplet_screen_60
+# python train.py experiment=3w_triplet_screen \
+#     dataset=3w_triplet_60 \
+#     name=3w_triplet_screen_60
 
-python train.py experiment=3w_triplet_screen \
-    dataset=3w_triplet_100 \
-    name=3w_triplet_screen_100
+# python train.py experiment=3w_triplet_screen \
+#     dataset=3w_triplet_100 \
+#     name=3w_triplet_screen_100
 
 # different identity, pair, rerank / screen, 18
 python train.py experiment=3w_pair \
