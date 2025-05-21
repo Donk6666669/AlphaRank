@@ -1,0 +1,20 @@
+# @package _global_
+name: 3w_triplet_combine
+notes: "Training on 3w triplet data"
+
+defaults:
+  - override /dataset: 3w_triplet_ori
+  - override /model: combine_triplet_ranker
+  - override /criterion: rank
+  - override /callbacks: [checkpoint_rerank, lr_monitor, rich, summary]
+
+dataset:
+  dataset_args:
+    train:
+      include_screen: false
+      max_screen: null
+      include_rerank: true
+      max_rerank: null
+
+optim:
+  lr: 1e-4

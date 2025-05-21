@@ -9,13 +9,14 @@ dataset_args:
     meta_path: /data/rerank/protenix/chembl_bdb/chembl_bdb_meta.lmdb
     meta_split: train_3w
     feat_lmdb_path:
-      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_1.lmdb
-      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_2.lmdb
-      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_3.lmdb
-      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_4.lmdb
-      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_5.lmdb
-      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_6.lmdb
-      - /data/rerank/protenix/chembl_bdb/sample_3w/pair/sample_3w_pair_7.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_1.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_2.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_3.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_4.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_5.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_6.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_7.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_8.lmdb
     feat_split: full_pair
     include_screen: true
     max_screen: null
@@ -26,5 +27,5 @@ dataset_args:
     meta_path: /data/rerank/protenix/chembl_bdb/chembl_bdb_meta.lmdb
     meta_split: val_5k
     feat_lmdb_path:
-      - /data/rerank/protenix/chembl_bdb/sample_val/sample_val_pair.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val/sample_val_pair_v2.lmdb
     feat_split: full_pair

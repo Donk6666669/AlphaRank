@@ -386,6 +386,162 @@ class TripletDataset(DatasetBase):
             return None
 
 
+class FullTripletDataset(TripletDataset):
+    def parse_feat(self, feat_key):
+        data = self.lmdb_list[self.keys2lmdbidx[feat_key]][feat_key]
+        s_inputs, s, (z_pm1, z_pm2, z_m1m2, z_m1p, z_m2p, z_m2m1) = data
+
+        len_p, len_m1, len_m2 = z_pm1.shape[0], z_pm1.shape[1], z_pm2.shape[1]
+        assert (
+            len_p + len_m1 + len_m2 == s.shape[0]
+        ), f"length mismatch: {len_p} + {len_m1} + {len_m2} != {s.shape[0]} for {feat_key}"
+
+
+
+        s_inputs_p = s_inputs[:len_p]
+        s_inputs_m1 = s_inputs[len_p : len_p + len_m1]
+        s_inputs_m2 = s_inputs[len_p + len_m1 :]
+        s_p = s[:len_p]
+        s_m1 = s[len_p : len_p + len_m1]
+        s_m2 = s[len_p + len_m1 :]
+
+        reverse_m1m2 = random.random() < 0.5
+        if reverse_m1m2:
+            res = {
+                # "s_inputs_p": s_inputs_p.float(),
+                # "s_inputs_m1": s_inputs_m2.float(),
+                # "s_inputs_m2": s_inputs_m1.float(),
+                # "s_p": s_p.float(),
+                # "s_m1": s_m2.float(),
+                # "s_m2": s_m1.float(),
+                "z_pm1": z_pm2.float(),
+                "z_pm2": z_pm1.float(),
+                # "z_m1m2": z_m1m2.float(),
+                "mask_pm1": torch.ones(len_p, len_m2, dtype=torch.bool),
+                "mask_pm2": torch.ones(len_p, len_m1, dtype=torch.bool),
+                "len_p": len_p,
+                "len_m1": len_m2,
+                "len_m2": len_m1,
+            }
+        else:
+            res = {
+                # "s_inputs_p": s_inputs_p.float(),
+                # "s_inputs_m1": s_inputs_m1.float(),
+                # "s_inputs_m2": s_inputs_m2.float(),
+                # "s_p": s_p.float(),
+                # "s_m1": s_m1.float(),
+                # "s_m2": s_m2.float(),
+                "z_pm1": z_pm1.float(),
+                "z_pm2": z_pm2.float(),
+                # "z_m1m2": z_m1m2.float(),
+                "mask_pm1": torch.ones(len_p, len_m1, dtype=torch.bool),
+                "mask_pm2": torch.ones(len_p, len_m2, dtype=torch.bool),
+                "len_p": len_p,
+                "len_m1": len_m1,
+                "len_m2": len_m2,
+            }
+        return res
+
+    def collate_fn(self, batch):
+        valid_batch = [b for b in batch if b is not None]
+
+        def process_pm(pm_list):
+            bz = len(pm_list)
+
+            lens_p = [pm["len_p"] for pm in pm_list]
+            lens_m1 = [pm["len_m1"] for pm in pm_list]
+            lens_m2 = [pm["len_m2"] for pm in pm_list]
+            z_pm1 = [pm["z_pm1"] for pm in pm_list]
+            z_pm2 = [pm["z_pm2"] for pm in pm_list]
+            masks_pm1 = [pm["mask_pm1"] for pm in pm_list]
+            masks_pm2 = [pm["mask_pm2"] for pm in pm_list]
+
+            max_p = max(lens_p)
+            max_m1 = max(lens_m1)
+            max_m2 = max(lens_m2)
+
+
+            padded_z_pm = torch.stack(
+                [
+                    F.pad(
+                        mat,
+                        (0, 0, 0, max_m - mat.size(1), 0, max_p - mat.size(0)),
+                        value=0,
+                    )
+                    for mat in z_pm
+                ]
+            )  # (batch, max_p, max_m)
+
+            padded_z_pm1 = torch.stack(
+                [
+                    F.pad(
+                        mat,
+                        (0, 0, 0, max_m1 - mat.size(1), 0, max_p - mat.size(0)),
+                        value=0,
+                    )
+                    for mat in z_pm1
+                ]
+            )
+            padded_z_pm2 = torch.stack(
+                [
+                    F.pad(
+                        mat,
+                        (0, 0, 0, max_m2 - mat.size(1), 0, max_p - mat.size(0)),
+                        value=0,
+                    )
+                    for mat in z_pm2
+                ]
+            )
+            padded_masks_pm1 = torch.stack(
+                [
+                    F.pad(
+                        mat,
+                        (0, max_m1 - mat.size(1), 0, max_p - mat.size(0)),
+                        value=False,
+                    )
+                    for mat in masks_pm1
+                ]
+            )
+            padded_masks_pm2 = torch.stack(
+                [
+                    F.pad(
+                        mat,
+                        (0, max_m2 - mat.size(1), 0, max_p - mat.size(0)),
+                        value=False,
+                    )
+                    for mat in masks_pm2
+                ]
+            )
+
+            return {
+                "z_pm1": padded_z_pm1,
+                "z_pm2": padded_z_pm2,
+                "mask_pm1": padded_masks_pm1,
+                "mask_pm2": padded_masks_pm2,
+                "len_p": torch.tensor(lens_p),
+                "len_m1": torch.tensor(lens_m1),
+                "len_m2": torch.tensor(lens_m2),
+            }
+
+        res = process_pm(valid_batch)
+        labels = torch.tensor(
+            [item["label"] for item in valid_batch], dtype=torch.float
+        )
+        hards = torch.tensor(
+            [item["hard"] for item in valid_batch], dtype=torch.bool
+        )
+        idxs = torch.tensor(
+            [item["idx"] for item in valid_batch], dtype=torch.long
+        )
+
+        res.update({
+            "label": labels,
+            "hard": hards,
+            "idx": idxs,
+        })
+        return res
+    
+
 class FullReduceTripletDataset(TripletDataset):
     def parse_feat(self, feat_key, reverse_m1m2=False):
         data = self.lmdb_list[self.keys2lmdbidx[feat_key]][feat_key]

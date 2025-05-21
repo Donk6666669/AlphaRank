@@ -643,3 +643,149 @@ class MLPTripletRanker(LinearTripletRanker):
             nn.Dropout(self.dropout),
             nn.Linear(int(self.mid_dim / 2), 1),
         )
+
+
+class CombineTripletRanker(TripletRanker):
+    def __init__(
+        self,
+        s_input_dim=449,
+        s_dim=384,
+        z_dim=128,
+        n_residue=1,
+        dropout=0.1,
+        strategy="from_z",
+    ):
+        super().__init__(s_input_dim, s_dim, z_dim)
+        self.strategy = strategy
+        if self.strategy == "from_z":
+            self.encoder = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.z_dim, dropout=dropout)]
+                * n_residue,
+                nn.Linear(self.z_dim, 1),
+            )
+        elif self.strategy == "from_s":
+            self.encoder_s_p = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+            )
+            self.encoder_s_m = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+            )
+            self.encoder_s_pm = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+            )
+            self.encoder_agg = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+                nn.Linear(self.s_dim, 1),
+            )
+        elif self.strategy == "from_sz":
+            self.encoder_s_p = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+            )
+            self.encoder_s_m = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+            )
+            self.encoder_z = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.z_dim, dropout=dropout)]
+                * n_residue,
+                nn.Linear(self.z_dim, self.s_dim),
+            )
+            self.encoder_agg = nn.Sequential(
+                *[ResidualMLPBlock(d_model=self.s_dim, dropout=dropout)]
+                * n_residue,
+                nn.Linear(self.s_dim, 1),
+            )
+
+    def single_forward(
+        self,
+        s_inputs_p: torch.Tensor = None,
+        s_inputs_m: torch.Tensor = None,
+        s_p: torch.Tensor = None,
+        s_m: torch.Tensor = None,
+        z_pm: torch.Tensor = None,
+        z_mp: torch.Tensor = None,
+        mask_p: torch.Tensor = None,
+        mask_m: torch.Tensor = None,
+        mask_pm: torch.Tensor = None,
+        len_p: torch.Tensor = None,
+        len_m: torch.Tensor = None,
+        **kwargs,
+    ):
+        if self.strategy == "from_z":
+            x = self.encoder(z_pm)
+        elif self.strategy == "from_s":
+            x = self.encoder_agg(
+                torch.einsum(
+                    "bpik,bimk->bpmk",
+                    self.encoder_s_p(s_p).unsqueeze(2),  # bz, len_p, 1, s_dim
+                    self.encoder_s_m(s_m).unsqueeze(1),  # bz, 1, len_m, s_dim
+                )
+                * self.encoder_s_pm(
+                    torch.einsum(
+                        "bpik,bimk->bpmk",
+                        s_p.unsqueeze(2),  # bz, len_p, 1, s_dim
+                        s_m.unsqueeze(1),  # bz, 1, len_m, s_dim
+                    )
+                )  # bz, len_p, len_m, s_dim
+            )  # bz, len_p, len_m, 1
+        elif self.strategy == "from_sz":
+            x = self.encoder_agg(
+                torch.einsum(
+                    "bpik,bimk->bpmk",
+                    self.encoder_s_p(s_p).unsqueeze(2),  # bz, len_p, 1, s_dim
+                    self.encoder_s_m(s_m).unsqueeze(1),  # bz, 1, len_m, s_dim
+                )
+                * self.encoder_z(z_pm)  # bz, len_p, len_m, s_dim
+            )  # bz, len_p, len_m, 1
+
+        x = x * mask_pm[..., None]
+        x = x.sum(dim=(1, 2)).squeeze()
+        return x
+
+    def forward(
+        self,
+        s_inputs_p=None,
+        s_inputs_m1=None,
+        s_inputs_m2=None,
+        s_p=None,
+        s_m1=None,
+        s_m2=None,
+        z_pm1=None,
+        z_pm2=None,
+        z_m1m2=None,
+        mask_pm1=None,
+        mask_pm2=None,
+        **kwargs,
+    ):
+        pred_pm1 = self.single_forward(
+            s_inputs_p=s_inputs_p,
+            s_inputs_m=s_inputs_m1,
+            s_p=s_p,
+            s_m=s_m1,
+            z_pm=z_pm1,
+            mask_pm=mask_pm1,
+            **kwargs,
+        )
+
+        pred_pm2 = self.single_forward(
+            s_inputs_p=s_inputs_p,
+            s_inputs_m=s_inputs_m2,
+            s_p=s_p,
+            s_m=s_m2,
+            z_pm=z_pm2,
+            mask_pm=mask_pm2,
+            **kwargs,
+        )
+
+        pred = F.sigmoid(pred_pm2 - pred_pm1)
+        return {
+            "pred": pred,
+            "pm1_pred": pred_pm1,
+            "pm2_pred": pred_pm2,
+        }
+

@@ -1,0 +1,11 @@
+# @package _global_
+name: 3w_triplet_combine
+notes: "Training on 3w triplet data"
+
+defaults:
+  - override /dataset: 3w_triplet_ori
+  - override /model: combine_triplet_ranker
+  - override /criterion: rank
+
+optim:
+  lr: 1e-4

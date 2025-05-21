@@ -764,35 +764,139 @@
 #     name=3w_triplet_screen_100
 
 # different identity, pair, rerank / screen, 18
+# python train.py experiment=3w_pair \
+#     name=3w_pair
+
+# python train.py experiment=3w_pair \
+#     dataset=3w_pair_60 \
+#     name=3w_pair_60
+
+# python train.py experiment=3w_pair \
+#     dataset=3w_pair_100 \
+#     name=3w_pair_100
+
+# python train.py experiment=3w_pair_rerank \
+#     name=3w_pair_rerank
+
+# python train.py experiment=3w_pair_rerank \
+#     dataset=3w_pair_60 \
+#     name=3w_pair_rerank_60
+
+# python train.py experiment=3w_pair_rerank \
+#     dataset=3w_pair_100 \
+#     name=3w_pair_rerank_100
+
+# python train.py experiment=3w_pair_screen \
+#     name=3w_pair_screen
+
+# python train.py experiment=3w_pair_screen \
+#     dataset=3w_pair_60 \
+#     name=3w_pair_screen_60
+
+# python train.py experiment=3w_pair_screen \
+#     dataset=3w_pair_100 \
+#     name=3w_pair_screen_100
+
+# 3w triplet
+
+python train.py experiment=3w_triplet \
+    name=3w_triplet
+
+python train.py experiment=3w_triplet \
+    dataset=3w_triplet_60 \
+    name=3w_triplet_60
+
+python train.py experiment=3w_triplet \
+    dataset=3w_triplet_100 \
+    name=3w_triplet_100
+
+python train.py experiment=3w_triplet_rerank \
+    name=3w_triplet_rerank
+
+python train.py experiment=3w_triplet_rerank \
+    dataset=3w_triplet_60 \
+    name=3w_triplet_rerank_60
+
+python train.py experiment=3w_triplet_rerank \
+    dataset=3w_triplet_100 \
+    name=3w_triplet_rerank_100
+
+# 3w triplet combine
+python train.py experiment=3w_triplet_combine \
+    name=3w_triplet_combine
+
+python train.py experiment=3w_triplet_combine \
+    dataset=3w_triplet_combine_60 \
+    name=3w_triplet_combine_60
+
+python train.py experiment=3w_triplet_combine \
+    dataset=3w_triplet_combine_100 \
+    name=3w_triplet_combine_100
+
+python train.py experiment=3w_triplet_combine_rerank \
+    name=3w_triplet_combine_rerank
+
+python train.py experiment=3w_triplet_combine_rerank \
+    dataset=3w_triplet_combine_60 \
+    name=3w_triplet_combine_rerank_60
+
+python train.py experiment=3w_triplet_combine_rerank \
+    dataset=3w_triplet_combine_100 \
+    name=3w_triplet_combine_rerank_100
+
+# pair
 python train.py experiment=3w_pair \
     name=3w_pair
 
-python train.py experiment=3w_pair \
-    dataset=3w_pair_60 \
-    name=3w_pair_60
+# python train.py experiment=3w_pair \
+#     dataset=3w_pair_60 \
+#     name=3w_pair_60
 
-python train.py experiment=3w_pair \
-    dataset=3w_pair_100 \
-    name=3w_pair_100
+# python train.py experiment=3w_pair \
+#     dataset=3w_pair_100 \
+#     name=3w_pair_100
 
 python train.py experiment=3w_pair_rerank \
     name=3w_pair_rerank
 
-python train.py experiment=3w_pair_rerank \
-    dataset=3w_pair_60 \
-    name=3w_pair_rerank_60
+# python train.py experiment=3w_pair_rerank \
+#     dataset=3w_pair_60 \
+#     name=3w_pair_rerank_60
 
-python train.py experiment=3w_pair_rerank \
-    dataset=3w_pair_100 \
-    name=3w_pair_rerank_100
+# python train.py experiment=3w_pair_rerank \
+#     dataset=3w_pair_100 \
+#     name=3w_pair_rerank_100
 
 python train.py experiment=3w_pair_screen \
     name=3w_pair_screen
 
-python train.py experiment=3w_pair_screen \
-    dataset=3w_pair_60 \
-    name=3w_pair_screen_60
+# python train.py experiment=3w_pair_screen \
+#     dataset=3w_pair_60 \
+#     name=3w_pair_screen_60
 
-python train.py experiment=3w_pair_screen \
-    dataset=3w_pair_100 \
-    name=3w_pair_screen_100
+# python train.py experiment=3w_pair_screen \
+#     dataset=3w_pair_100 \
+#     name=3w_pair_screen_100
+
+# 3w pair combine
+python train.py experiment=3w_pair_combine \
+    name=3w_pair_combine
+
+# python train.py experiment=3w_pair_combine \
+#     dataset=3w_pair_combine_60 \
+#     name=3w_pair_combine_60
+
+# python train.py experiment=3w_pair_combine \
+#     dataset=3w_pair_combine_100 \
+#     name=3w_pair_combine_100
+
+python train.py experiment=3w_pair_combine_rerank \
+    name=3w_pair_combine_rerank
+
+# python train.py experiment=3w_pair_combine_rerank \
+#     dataset=3w_pair_combine_60 \
+#     name=3w_pair_combine_rerank_60
+
+# python train.py experiment=3w_pair_combine_rerank \
+#     dataset=3w_pair_combine_100 \
+#     name=3w_pair_combine_rerank_100
