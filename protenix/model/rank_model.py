@@ -308,9 +308,13 @@ class CombinePairRanker(PairRanker):
         n_residue=1,
         dropout=0.1,
         strategy="from_z",
+        agg_strategy="sum",
+        agg_topk=64,
     ):
         super().__init__(s_input_dim, s_dim, z_dim)
         self.strategy = strategy
+        self.agg_strategy = agg_strategy
+        self.agg_topk = agg_topk
         if self.strategy == "from_z":
             self.encoder = nn.Sequential(
                 *[ResidualMLPBlock(d_model=self.z_dim, dropout=dropout)]
@@ -397,11 +401,49 @@ class CombinePairRanker(PairRanker):
                 * self.encoder_z(z_pm)  # bz, len_p, len_m, s_dim
             )  # bz, len_p, len_m, 1
 
-        x = x * mask_pm[..., None]
-        x = x.sum(dim=(1, 2)).squeeze()
-        return {
-            "pred": x,
-        }
+        x = x.squeeze()  # bz, len_p, len_m
+
+        mask_pm = mask_pm.float()
+        total_pair = mask_pm.sum(dim=(1, 2))
+        if self.agg_strategy == "sum":
+            x = x * mask_pm
+            x = x.sum(dim=(1, 2))
+        elif self.agg_strategy == "mean":
+            x = x * mask_pm
+            x = x.sum(dim=(1, 2)) / total_pair
+        elif self.agg_strategy == "sum_sigmoid":
+            x = (torch.sigmoid(x) * mask_pm).sum(dim=(1, 2))
+        elif self.agg_strategy == "mean_sigmoid":
+            x = (torch.sigmoid(x) * mask_pm).sum(dim=(1, 2)) / total_pair
+        elif self.agg_strategy == "topk_sum":
+            x = x * mask_pm + -torch.inf * (1 - mask_pm)
+            x = x.view(x.shape[0], -1).topk(self.agg_topk, dim=-1).values
+            x[x == -torch.inf] = 0
+            x = x.sum(dim=-1)
+        elif self.agg_strategy == "topk_mean":
+            x = x * mask_pm + -torch.inf * (1 - mask_pm)
+            x = x.view(x.shape[0], -1).topk(self.agg_topk, dim=-1).values
+            mask_top = x != -torch.inf
+            x = x * mask_top
+            x = x.sum(dim=-1) / torch.min(
+                total_pair,
+                torch.tensor([self.agg_topk] * x.shape[0]).to(x),
+            )
+        elif self.agg_strategy == "topk_sum_sigmoid":
+            x = torch.sigmoid(x * mask_pm + -torch.inf * (1 - mask_pm))
+            x = x.view(x.shape[0], -1).topk(self.agg_topk, dim=-1).values
+            x = x.sum(dim=-1)
+        elif self.agg_strategy == "topk_mean_sigmoid":
+            x = torch.sigmoid(x * mask_pm + -torch.inf * (1 - mask_pm))
+            x = x.view(x.shape[0], -1).topk(self.agg_topk, dim=-1).values
+            x = x.sum(dim=-1) / torch.min(
+                total_pair,
+                torch.tensor([self.agg_topk] * x.shape[0]).to(x),
+            )
+        else:
+            raise ValueError(f"Unknown agg_strategy: {self.agg_strategy}")
+        x = x.squeeze()
+        return {"pred": x}
 
 
 class TripletRanker(nn.Module):
@@ -654,9 +696,13 @@ class CombineTripletRanker(TripletRanker):
         n_residue=1,
         dropout=0.1,
         strategy="from_z",
+        agg_strategy="sum",
+        agg_topk=64,
     ):
         super().__init__(s_input_dim, s_dim, z_dim)
         self.strategy = strategy
+        self.agg_strategy = agg_strategy
+        self.agg_topk = agg_topk
         if self.strategy == "from_z":
             self.encoder = nn.Sequential(
                 *[ResidualMLPBlock(d_model=self.z_dim, dropout=dropout)]
@@ -743,8 +789,48 @@ class CombineTripletRanker(TripletRanker):
                 * self.encoder_z(z_pm)  # bz, len_p, len_m, s_dim
             )  # bz, len_p, len_m, 1
 
-        x = x * mask_pm[..., None]
-        x = x.sum(dim=(1, 2)).squeeze()
+        x = x.squeeze()  # bz, len_p, len_m
+
+        mask_pm = mask_pm.float()
+        total_pair = mask_pm.sum(dim=(1, 2))
+        if self.agg_strategy == "sum":
+            x = x * mask_pm
+            x = x.sum(dim=(1, 2))
+        elif self.agg_strategy == "mean":
+            x = x * mask_pm
+            x = x.sum(dim=(1, 2)) / total_pair
+        elif self.agg_strategy == "sum_sigmoid":
+            x = (torch.sigmoid(x) * mask_pm).sum(dim=(1, 2))
+        elif self.agg_strategy == "mean_sigmoid":
+            x = (torch.sigmoid(x) * mask_pm).sum(dim=(1, 2)) / total_pair
+        elif self.agg_strategy == "topk_sum":
+            x = x * mask_pm + -torch.inf * (1 - mask_pm)
+            x = x.view(x.shape[0], -1).topk(self.agg_topk, dim=-1).values
+            x[x == -torch.inf] = 0
+            x = x.sum(dim=-1)
+        elif self.agg_strategy == "topk_mean":
+            x = x * mask_pm + -torch.inf * (1 - mask_pm)
+            x = x.view(x.shape[0], -1).topk(self.agg_topk, dim=-1).values
+            mask_top = x != -torch.inf
+            x = x * mask_top
+            x = x.sum(dim=-1) / torch.min(
+                total_pair,
+                torch.tensor([self.agg_topk] * x.shape[0]).to(x),
+            )
+        elif self.agg_strategy == "topk_sum_sigmoid":
+            x = torch.sigmoid(x * mask_pm + -torch.inf * (1 - mask_pm))
+            x = x.view(x.shape[0], -1).topk(self.agg_topk, dim=-1).values
+            x = x.sum(dim=-1)
+        elif self.agg_strategy == "topk_mean_sigmoid":
+            x = torch.sigmoid(x * mask_pm + -torch.inf * (1 - mask_pm))
+            x = x.view(x.shape[0], -1).topk(self.agg_topk, dim=-1).values
+            x = x.sum(dim=-1) / torch.min(
+                total_pair,
+                torch.tensor([self.agg_topk] * x.shape[0]).to(x),
+            )
+        else:
+            raise ValueError(f"Unknown agg_strategy: {self.agg_strategy}")
+        x = x.squeeze()
         return x
 
     def forward(
@@ -788,4 +874,3 @@ class CombineTripletRanker(TripletRanker):
             "pm1_pred": pred_pm1,
             "pm2_pred": pred_pm2,
         }
-

@@ -356,7 +356,7 @@ class TripletDataset(DatasetBase):
         logger.info(f"total samples: {len(self.meta_keys)}")
         logger.info(f"missing samples: {len(missing_keys)}")
 
-    def parse_feat(self, feat_key):
+    def parse_feat(self, feat_key, reverse_m1m2=False):
         # Implement this method in subclasses
         raise NotImplementedError("parse_feat method not implemented")
 
@@ -387,7 +387,7 @@ class TripletDataset(DatasetBase):
 
 
 class FullTripletDataset(TripletDataset):
-    def parse_feat(self, feat_key):
+    def parse_feat(self, feat_key, reverse_m1m2=False):
         data = self.lmdb_list[self.keys2lmdbidx[feat_key]][feat_key]
         s_inputs, s, (z_pm1, z_pm2, z_m1m2, z_m1p, z_m2p, z_m2m1) = data
 
@@ -396,16 +396,13 @@ class FullTripletDataset(TripletDataset):
             len_p + len_m1 + len_m2 == s.shape[0]
         ), f"length mismatch: {len_p} + {len_m1} + {len_m2} != {s.shape[0]} for {feat_key}"
 
+        # s_inputs_p = s_inputs[:len_p]
+        # s_inputs_m1 = s_inputs[len_p : len_p + len_m1]
+        # s_inputs_m2 = s_inputs[len_p + len_m1 :]
+        # s_p = s[:len_p]
+        # s_m1 = s[len_p : len_p + len_m1]
+        # s_m2 = s[len_p + len_m1 :]
 
-
-        s_inputs_p = s_inputs[:len_p]
-        s_inputs_m1 = s_inputs[len_p : len_p + len_m1]
-        s_inputs_m2 = s_inputs[len_p + len_m1 :]
-        s_p = s[:len_p]
-        s_m1 = s[len_p : len_p + len_m1]
-        s_m2 = s[len_p + len_m1 :]
-
-        reverse_m1m2 = random.random() < 0.5
         if reverse_m1m2:
             res = {
                 # "s_inputs_p": s_inputs_p.float(),
@@ -459,18 +456,6 @@ class FullTripletDataset(TripletDataset):
             max_p = max(lens_p)
             max_m1 = max(lens_m1)
             max_m2 = max(lens_m2)
-
-
-            padded_z_pm = torch.stack(
-                [
-                    F.pad(
-                        mat,
-                        (0, 0, 0, max_m - mat.size(1), 0, max_p - mat.size(0)),
-                        value=0,
-                    )
-                    for mat in z_pm
-                ]
-            )  # (batch, max_p, max_m)
 
             padded_z_pm1 = torch.stack(
                 [

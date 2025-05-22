@@ -799,54 +799,54 @@
 
 # 3w triplet
 
-python train.py experiment=3w_triplet \
-    name=3w_triplet
+# python train.py experiment=3w_triplet \
+#     name=3w_triplet
 
-python train.py experiment=3w_triplet \
-    dataset=3w_triplet_60 \
-    name=3w_triplet_60
+# python train.py experiment=3w_triplet \
+#     dataset=3w_triplet_60 \
+#     name=3w_triplet_60
 
-python train.py experiment=3w_triplet \
-    dataset=3w_triplet_100 \
-    name=3w_triplet_100
+# python train.py experiment=3w_triplet \
+#     dataset=3w_triplet_100 \
+#     name=3w_triplet_100
 
-python train.py experiment=3w_triplet_rerank \
-    name=3w_triplet_rerank
+# python train.py experiment=3w_triplet_rerank \
+#     name=3w_triplet_rerank
 
-python train.py experiment=3w_triplet_rerank \
-    dataset=3w_triplet_60 \
-    name=3w_triplet_rerank_60
+# python train.py experiment=3w_triplet_rerank \
+#     dataset=3w_triplet_60 \
+#     name=3w_triplet_rerank_60
 
-python train.py experiment=3w_triplet_rerank \
-    dataset=3w_triplet_100 \
-    name=3w_triplet_rerank_100
+# python train.py experiment=3w_triplet_rerank \
+#     dataset=3w_triplet_100 \
+#     name=3w_triplet_rerank_100
 
-# 3w triplet combine
-python train.py experiment=3w_triplet_combine \
-    name=3w_triplet_combine
+# # 3w triplet combine
+# python train.py experiment=3w_triplet_combine \
+#     name=3w_triplet_combine
 
-python train.py experiment=3w_triplet_combine \
-    dataset=3w_triplet_combine_60 \
-    name=3w_triplet_combine_60
+# python train.py experiment=3w_triplet_combine \
+#     dataset=3w_triplet_ori_60 \
+#     name=3w_triplet_combine_60
 
-python train.py experiment=3w_triplet_combine \
-    dataset=3w_triplet_combine_100 \
-    name=3w_triplet_combine_100
+# python train.py experiment=3w_triplet_combine \
+#     dataset=3w_triplet_ori_100 \
+#     name=3w_triplet_combine_100
 
-python train.py experiment=3w_triplet_combine_rerank \
-    name=3w_triplet_combine_rerank
+# python train.py experiment=3w_triplet_combine_rerank \
+#     name=3w_triplet_combine_rerank
 
-python train.py experiment=3w_triplet_combine_rerank \
-    dataset=3w_triplet_combine_60 \
-    name=3w_triplet_combine_rerank_60
+# python train.py experiment=3w_triplet_combine_rerank \
+#     dataset=3w_triplet_ori_60 \
+#     name=3w_triplet_combine_rerank_60
 
-python train.py experiment=3w_triplet_combine_rerank \
-    dataset=3w_triplet_combine_100 \
-    name=3w_triplet_combine_rerank_100
+# python train.py experiment=3w_triplet_combine_rerank \
+#     dataset=3w_triplet_ori_100 \
+#     name=3w_triplet_combine_rerank_100
 
-# pair
-python train.py experiment=3w_pair \
-    name=3w_pair
+# # pair
+# # python train.py experiment=3w_pair \
+# #     name=3w_pair
 
 # python train.py experiment=3w_pair \
 #     dataset=3w_pair_60 \
@@ -856,8 +856,8 @@ python train.py experiment=3w_pair \
 #     dataset=3w_pair_100 \
 #     name=3w_pair_100
 
-python train.py experiment=3w_pair_rerank \
-    name=3w_pair_rerank
+# # python train.py experiment=3w_pair_rerank \
+# #     name=3w_pair_rerank
 
 # python train.py experiment=3w_pair_rerank \
 #     dataset=3w_pair_60 \
@@ -867,8 +867,8 @@ python train.py experiment=3w_pair_rerank \
 #     dataset=3w_pair_100 \
 #     name=3w_pair_rerank_100
 
-python train.py experiment=3w_pair_screen \
-    name=3w_pair_screen
+# # python train.py experiment=3w_pair_screen \
+# #     name=3w_pair_screen
 
 # python train.py experiment=3w_pair_screen \
 #     dataset=3w_pair_60 \
@@ -878,25 +878,171 @@ python train.py experiment=3w_pair_screen \
 #     dataset=3w_pair_100 \
 #     name=3w_pair_screen_100
 
-# 3w pair combine
-python train.py experiment=3w_pair_combine \
-    name=3w_pair_combine
+# # 3w pair combine
+# # python train.py experiment=3w_pair_combine \
+# #     name=3w_pair_combine
 
 # python train.py experiment=3w_pair_combine \
-#     dataset=3w_pair_combine_60 \
+#     dataset=3w_pair_ori_60 \
 #     name=3w_pair_combine_60
 
 # python train.py experiment=3w_pair_combine \
-#     dataset=3w_pair_combine_100 \
+#     dataset=3w_pair_ori_100 \
 #     name=3w_pair_combine_100
 
-python train.py experiment=3w_pair_combine_rerank \
-    name=3w_pair_combine_rerank
+# # python train.py experiment=3w_pair_combine_rerank \
+# #     name=3w_pair_combine_rerank
 
 # python train.py experiment=3w_pair_combine_rerank \
-#     dataset=3w_pair_combine_60 \
+#     dataset=3w_pair_ori_60 \
 #     name=3w_pair_combine_rerank_60
 
 # python train.py experiment=3w_pair_combine_rerank \
-#     dataset=3w_pair_combine_100 \
+#     dataset=3w_pair_ori_100 \
 #     name=3w_pair_combine_rerank_100
+
+
+# # train 3w_100 pair with 5 random seed
+# python train.py experiment=3w_pair_rerank \
+#     dataset=3w_pair_100 \
+#     trainer.max_epochs=50 \
+#     seed=2025 \
+#     name=3w_pair_rerank_100_seed_2025
+
+# python train.py experiment=3w_pair_rerank \
+#     dataset=3w_pair_100 \
+#     trainer.max_epochs=50 \
+#     seed=2026 \
+#     name=3w_pair_rerank_100_seed_2026
+
+# python train.py experiment=3w_pair_rerank \
+#     dataset=3w_pair_100 \
+#     trainer.max_epochs=50 \
+#     seed=1 \
+#     name=3w_pair_rerank_100_seed_1
+
+# python train.py experiment=3w_pair_rerank \
+#     dataset=3w_pair_100 \
+#     trainer.max_epochs=50 \
+#     seed=2 \
+#     name=3w_pair_rerank_100_seed_2
+
+# python train.py experiment=3w_pair_rerank \
+#     dataset=3w_pair_100 \
+#     trainer.max_epochs=50 \
+#     seed=7 \
+#     name=3w_pair_rerank_100_seed_3
+
+# # train 3w_100 triplet with 5 random seed
+
+# python train.py experiment=3w_triplet_rerank \
+#     dataset=3w_triplet_100 \
+#     trainer.max_epochs=50 \
+#     seed=2025 \
+#     name=3w_triplet_rerank_100_seed_2025
+
+# python train.py experiment=3w_triplet_rerank \
+#     dataset=3w_triplet_100 \
+#     trainer.max_epochs=50 \
+#     seed=2026 \
+#     name=3w_triplet_rerank_100_seed_2026
+
+# python train.py experiment=3w_triplet_rerank \
+#     dataset=3w_triplet_100 \
+#     trainer.max_epochs=50 \
+#     seed=1 \
+#     name=3w_triplet_rerank_100_seed_1
+
+# python train.py experiment=3w_triplet_rerank \
+#     dataset=3w_triplet_100 \
+#     trainer.max_epochs=50 \
+#     seed=2 \
+#     name=3w_triplet_rerank_100_seed_2
+
+# python train.py experiment=3w_triplet_rerank \
+#     dataset=3w_triplet_100 \
+#     trainer.max_epochs=50 \
+#     seed=7 \
+#     name=3w_triplet_rerank_100_seed_3
+
+# # agg_strategy, triplet
+# python train.py experiment=3w_triplet_combine_rerank \
+#     dataset=3w_triplet_ori_100 \
+#     model.agg_strategy="sum" \
+#     name=3w_triplet_combine_rerank_sum
+
+# python train.py experiment=3w_triplet_combine_rerank \
+#     dataset=3w_triplet_ori_100 \
+#     model.agg_strategy="mean" \
+#     name=3w_triplet_combine_rerank_mean
+
+# python train.py experiment=3w_triplet_combine_rerank \
+#     dataset=3w_triplet_ori_100 \
+#     model.agg_strategy="sum_sigmoid" \
+#     name=3w_triplet_combine_rerank_sum_sigmoid
+
+# python train.py experiment=3w_triplet_combine_rerank \
+#     dataset=3w_triplet_ori_100 \
+#     model.agg_strategy="mean_sigmoid" \
+#     name=3w_triplet_combine_rerank_mean_sigmoid
+
+# python train.py experiment=3w_triplet_combine_rerank \
+#     dataset=3w_triplet_ori_100 \
+#     model.agg_strategy="topk_sum" \
+#     name=3w_triplet_combine_rerank_topk_sum
+
+# python train.py experiment=3w_triplet_combine_rerank \
+#     dataset=3w_triplet_ori_100 \
+#     model.agg_strategy="topk_mean" \
+#     name=3w_triplet_combine_rerank_topk_mean
+
+# python train.py experiment=3w_triplet_combine_rerank \
+#     dataset=3w_triplet_ori_100 \
+#     model.agg_strategy="topk_sum_sigmoid" \
+#     name=3w_triplet_combine_rerank_topk_sum_sigmoid
+
+# python train.py experiment=3w_triplet_combine_rerank \
+#     dataset=3w_triplet_ori_100 \
+#     model.agg_strategy="topk_mean_sigmoid" \
+#     name=3w_triplet_combine_rerank_topk_mean_sigmoid
+
+# agg_strategy, pair
+python train.py experiment=3w_pair_combine_rerank \
+    dataset=3w_pair_ori_100 \
+    model.agg_strategy="sum" \
+    name=3w_pair_combine_rerank_sum
+
+python train.py experiment=3w_pair_combine_rerank \
+    dataset=3w_pair_ori_100 \
+    model.agg_strategy="mean" \
+    name=3w_pair_combine_rerank_mean
+
+python train.py experiment=3w_pair_combine_rerank \
+    dataset=3w_pair_ori_100 \
+    model.agg_strategy="sum_sigmoid" \
+    name=3w_pair_combine_rerank_sum_sigmoid
+
+python train.py experiment=3w_pair_combine_rerank \
+    dataset=3w_pair_ori_100 \
+    model.agg_strategy="mean_sigmoid" \
+    name=3w_pair_combine_rerank_mean_sigmoid
+
+python train.py experiment=3w_pair_combine_rerank \
+    dataset=3w_pair_ori_100 \
+    model.agg_strategy="topk_sum" \
+    name=3w_pair_combine_rerank_topk_sum
+
+python train.py experiment=3w_pair_combine_rerank \
+    dataset=3w_pair_ori_100 \
+    model.agg_strategy="topk_mean" \
+    name=3w_pair_combine_rerank_topk_mean
+
+python train.py experiment=3w_pair_combine_rerank \
+    dataset=3w_pair_ori_100 \
+    model.agg_strategy="topk_sum_sigmoid" \
+    name=3w_pair_combine_rerank_topk_sum_sigmoid
+
+python train.py experiment=3w_pair_combine_rerank \
+    dataset=3w_pair_ori_100 \
+    model.agg_strategy="topk_mean_sigmoid" \
+    name=3w_pair_combine_rerank_topk_mean_sigmoid

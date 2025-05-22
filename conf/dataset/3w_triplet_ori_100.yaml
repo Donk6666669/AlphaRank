@@ -7,7 +7,7 @@ dataset_args:
   train:
     _target_: protenix.data.pair_dataset.FullTripletDataset
     meta_path: /data/rerank/protenix/chembl_bdb/chembl_bdb_meta.lmdb
-    meta_split: train_3w_60
+    meta_split: train_3w_100
     feat_lmdb_path:
       - /data/rerank/protenix/chembl_bdb/sample_3w/triplet_v2/block_1.lmdb
       - /data/rerank/protenix/chembl_bdb/sample_3w/triplet_v2/block_2.lmdb

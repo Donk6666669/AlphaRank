@@ -23,7 +23,7 @@ dataset_args:
     include_rerank: true
     max_rerank: null
   val:
-    _target_: protenix.data.pair_dataset.FullPairDataset
+    _target_: protenix.data.pair_dataset.FullTripletDataset
     meta_path: /data/rerank/protenix/chembl_bdb/chembl_bdb_meta.lmdb
     meta_split: val_5k
     feat_lmdb_path:

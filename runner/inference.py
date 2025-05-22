@@ -324,7 +324,7 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                     )
                 else:
                     raise ValueError(
-                        f"len(data['len']) should be 2 or 3, but got {len(data['len'])}"
+                        f"len(data['len']) should be 2 or 3, but got {n_entity}"
                     )
 
                 if mode == "full":
@@ -334,7 +334,7 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                         tuple([item.cpu() for item in z_interact]),
                     )
                 elif mode == "reduced":
-                    if len(data["len"]) == 2:
+                    if n_entity == 2:
                         s_inputs_p = s_inputs[:len_p].mean(dim=0)
                         s_inputs_m = s_inputs[len_p:].mean(dim=0)
                         s_p = s[:len_p].mean(dim=0)
@@ -347,7 +347,7 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                             s_m.cpu(),
                             z_pm.cpu(),
                         )
-                    elif len(data["len"]) == 3:
+                    elif n_entity == 3:
                         s_inputs_p = s_inputs[:len_p].mean(dim=0)
                         s_inputs_m1 = s_inputs[len_p : len_p + len_m1].mean(
                             dim=0

@@ -5,3 +5,5 @@ z_dim: 128
 n_residue: 1
 dropout: 0.1
 strategy: "from_z"
+agg_strategy: "sum"
+agg_topk: 64
