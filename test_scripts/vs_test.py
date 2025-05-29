@@ -35,10 +35,16 @@ elif test == "dude":
     ]
 
 ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-09_10-38-27/checkpoints/epoch=024-step=750.ckpt"
-ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-09_09-44-57/checkpoints/epoch=020-step=6153.ckpt"
+#ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-09_09-44-57/checkpoints/epoch=020-step=6153.ckpt"
 #ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-09_09-44-57/checkpoints/last.ckpt"
-ckpt_path = '/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-10_21-54-21/checkpoints/epoch=022-step=3450.ckpt'
-ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-10_21-55-22/checkpoints/epoch=018-step=2717.ckpt"
+#ckpt_path = '/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-10_21-54-21/checkpoints/epoch=022-step=3450.ckpt'
+#ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-10_21-55-22/checkpoints/epoch=018-step=2717.ckpt"
+#ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-09_10-38-27/checkpoints/last.ckpt"
+#ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-20_11-48-48/checkpoints/epoch=024-step=400.ckpt"
+#ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-20_12-11-17/checkpoints/epoch=022-step=345.ckpt"
+
+#ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-21_17-52-47/checkpoints/epoch=019-step=300.ckpt"
+
 
 
 
@@ -190,6 +196,34 @@ print(f"Overall Enrichment Factor @1%: {overall_ef1:.4f}")
 # ---------------------------
 # Step 6: Per-target AUC and EF@1%
 # ---------------------------
+import numpy as np
+def compute_ef1_and_bedroc(group: pd.DataFrame, top_percent=0.01, alpha=20.0):
+    # Sort scores descending
+    sorted_group = group.sort_values("score", ascending=False).reset_index(drop=True)
+    labels = sorted_group["label"].values
+    N = len(labels)
+    n = np.sum(labels)
+
+    # ---- EF1 ----
+    top_n = max(int(N * top_percent), 1)
+    ef1 = (np.sum(labels[:top_n]) / (n * top_percent)) if n > 0 else 0.0
+
+    # ---- BEDROC ----
+    if n == 0 or n == N:
+        bedroc = 0.0
+    else:
+        # Get ranks of actives (start from 1)
+        active_indices = np.where(labels == 1)[0] + 1
+        ri = (active_indices - 1) / N  # normalized rank (0 to 1)
+        sum_exp = np.sum(np.exp(-alpha * ri))
+        S_alpha = sum_exp / n
+        R_alpha = (1 - np.exp(-alpha)) / alpha
+        bedroc = (S_alpha - R_alpha) / (1 - R_alpha)
+
+    print(f"EF@{int(top_percent*100)}%: {ef1:.4f}")
+    print(f"BEDROC (α={alpha}): {bedroc:.4f}")
+    return ef1, bedroc
+
 per_target_results = []
 for target, group in df.groupby("target"):
     labels = group["label"].values
@@ -211,10 +245,14 @@ for target, group in df.groupby("target"):
     ef1 = actives_in_top / expected if expected > 0 else 0.0
     print(ef1)
 
+    ef, bedroc = compute_ef1_and_bedroc(group, top_percent=0.01, alpha=80.5)
+    ef1 = ef
+
     per_target_results.append({
         "target": target,
         "auc": auc,
-        "ef1": ef1
+        "ef1": ef1,
+        "bedroc": bedroc,
     })
 
 results_df = pd.DataFrame(per_target_results)
@@ -222,10 +260,11 @@ results_df.to_csv("per_target_results.csv", index=False)
 
 mean_auc = results_df["auc"].mean()
 mean_ef1 = results_df["ef1"].mean()
+mean_bedroc = results_df["bedroc"].mean()
 
 print(f"Mean AUC across targets: {mean_auc:.4f}")
 print(f"Mean EF@1% across targets: {mean_ef1:.4f}")
-print("Per-target results saved to per_target_results.csv")
+print(f"Mean BEDROC across targets: {mean_bedroc:.4f}")
 
 
 
