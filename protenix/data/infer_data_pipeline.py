@@ -291,5 +291,4 @@ class InferenceDataset(Dataset):
             error_message = f"{e}:\n{traceback.format_exc()}"
         data["sample_name"] = single_sample_dict["name"]
         data["sample_index"] = index
-        data["len"] = single_sample_dict["len"]
         return data, atom_array, error_message

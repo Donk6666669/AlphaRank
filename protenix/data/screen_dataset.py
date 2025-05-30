@@ -219,7 +219,7 @@ class ComplexFeatureDataset(Dataset):
         return sample
 
 
-def get_discrepant_pairs(assay_records, threshold=1.0):
+def get_discrepant_pairs(assay_records, min_threshold=1.0, max_threshold=None):
     # Extract data to numpy arrays
     assay_records = sorted(assay_records, key=lambda x: x["activity"]["value"])
     names = [r["name"] for r in assay_records]
@@ -257,7 +257,11 @@ def get_discrepant_pairs(assay_records, threshold=1.0):
     no_overlap = (upper[i] < lower[j]) | (upper[j] < lower[i])
 
     # Combine conditions
-    valid_mask = (delta >= threshold) & no_overlap
+    valid_mask = no_overlap
+    if max_threshold is not None:
+        valid_mask = valid_mask & (delta <= max_threshold)
+    if min_threshold is not None:
+        valid_mask = valid_mask & (delta >= min_threshold)
 
     # Generate sorted pairs
     pairs = [tuple([names[i[k]], names[j[k]]]) for k in np.where(valid_mask)[0]]

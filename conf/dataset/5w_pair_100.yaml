@@ -1,0 +1,54 @@
+_target_: protenix.data.pair_dataset.DataModule
+num_workers: 32
+pin_memory: True
+batch_size: 1024
+dataset_args:
+  train:
+    _target_: protenix.data.pair_dataset.FullReducePairDataset
+    meta_path: /data/rerank/protenix/chembl_bdb/chembl_bdb_meta.lmdb
+    meta_split: train_5w_100
+    feat_lmdb_path:
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_1.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_2.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_3.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_4.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_5.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_6.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_7.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_3w/pair_v2/block_8.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_1.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_2.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_3.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_4.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_5.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_6.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_7.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_3w/pair_v2/block_8.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_1w_0.5_1.0/pair/block_1.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_1w_0.5_1.0/pair/block_2.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_1w_0.5_1.0/pair/block_3.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_1w_0.5_1.0/pair/block_4.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_1w_0.5_1.0/pair/block_5.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_1w_0.5_1.0/pair/block_6.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_1w_0.5_1.0/pair/block_7.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_1w_0.5_1.0/pair/block_8.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_1.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_2.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_3.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_4.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_5.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_6.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_7.lmdb
+      - /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_8.lmdb
+    feat_split: full_pair
+    include_screen: true
+    max_screen: null
+    include_rerank: true
+    max_rerank: null
+  val:
+    _target_: protenix.data.pair_dataset.FullReducePairDataset
+    meta_path: /data/rerank/protenix/chembl_bdb/chembl_bdb_meta.lmdb
+    meta_split: val_5k
+    feat_lmdb_path:
+      - /data/rerank/protenix/chembl_bdb/sample_val/sample_val_pair_v2.lmdb
+    feat_split: full_pair

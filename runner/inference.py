@@ -252,6 +252,10 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
     cache = {}
     cache_size = 10
     mode = configs["save_feat"]["mode"]
+    if "triplet" in configs["save_feat"]["lmdb"]:
+        split_key = f"{mode}_triplet"
+    else:
+        split_key = f"{mode}_pair"
 
     num_data = len(dataloader.dataset)
     for seed in configs.seeds:
@@ -324,7 +328,7 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                     )
                 else:
                     raise ValueError(
-                        f"len(data['len']) should be 2 or 3, but got {n_entity}"
+                        f"n_entity should be 2 or 3, but got {n_entity}"
                     )
 
                 if mode == "full":
@@ -391,10 +395,6 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
 
                 if len(cache) >= cache_size:
                     lmdb_dataset.write_data(cache)
-                    if len(data["len"]) == 2:
-                        split_key = f"{mode}_pair"
-                    elif len(data["len"]) == 3:
-                        split_key = f"{mode}_triplet"
                     lmdb_dataset.set_split(
                         split_key, list(cache.keys()), append=True
                     )
@@ -416,10 +416,6 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
 
     if len(cache) > 0:
         lmdb_dataset.write_data(cache)
-        if len(data["len"]) == 2:
-            split_key = f"{mode}_pair"
-        elif len(data["len"]) == 3:
-            split_key = f"{mode}_triplet"
         lmdb_dataset.set_split(split_key, list(cache.keys()), append=True)
 
 
