@@ -55,6 +55,8 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
     && chmod +x /tmp/install-conda.sh \
     && bash /tmp/install-conda.sh -b -f -p /usr/local \
     && rm -f /tmp/install-conda.sh \
+    && conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main \
+    && conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r \
     && conda install -y python=${PYTHON_VERSION} \
     && conda clean -y --all
 
