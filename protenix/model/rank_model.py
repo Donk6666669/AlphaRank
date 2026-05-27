@@ -1,7 +1,16 @@
 import torch
 import torch.nn.functional as F
+import math
 from torch import nn
-from lorentz import exp_map0, pairwise_dist, oxy_angle
+from lorentz import (
+    exp_map0,
+    pairwise_dist,
+    half_aperture,
+    oxy_angle,
+    oxy_cos_safe,
+    lorentz_distance,
+    oxy_tangent_cos,
+)
 
 class PairRanker(nn.Module):
     def __init__(self, s_input_dim=449, s_dim=384, z_dim=128):
@@ -312,36 +321,64 @@ class HYPMLPPairRanker(PairRanker):
         mid_dim=128,
         dropout=0.5,
         strategy="cat_sz",
-        alpha=0.5,
-        
+        alpha=0.50,
+        max_norm=6.0,
+        enable_rel_norm=False,
+        rel_shrink_ratio=0.1,
+        fusion_mode="dist",
+        tau_stable=1.0,
+        norm_mode="none",
+        min_norm=0.0,
+        c=6.0,
+        prot_s_dim=384,
     ):
-        super().__init__(s_input_dim, s_dim, z_dim)
-
+        super().__init__()
         self.mid_dim = mid_dim
         self.dropout = dropout
         self.strategy = strategy
         self.alpha = alpha
-        #self.beta = beta
+        self.max_norm = max_norm
+        self.enable_rel_norm = enable_rel_norm
+        self.rel_shrink_ratio = rel_shrink_ratio
+        self.fusion_mode = fusion_mode
+        self.tau_stable = tau_stable
+        self.norm_mode = norm_mode
+        self.min_norm = min_norm
+        self.c = c
+        self.prot_s_dim = prot_s_dim
 
-        # 定义 input_dim（和你之前的一样）
+        self.log_alpha = nn.Parameter(torch.log(torch.tensor(1.0)))
+        self.log_beta = nn.Parameter(torch.log(torch.tensor(1.0)))
+        self.pair_u_scale_logit = nn.Parameter(torch.tensor(0.0), requires_grad=True)
+        self.prot_u_scale_logit = nn.Parameter(torch.tensor(0.0), requires_grad=True)
+        self.protein_alpha = nn.Parameter(torch.tensor([128**-0.5]).log(), requires_grad=True)
+        self.ligand_alpha = nn.Parameter(torch.tensor([128**-0.5]).log(), requires_grad=True)
+        self.curv = nn.Parameter(torch.tensor([1.0]).log(), requires_grad=False)
+        self._curv_minmax = {
+            "max": math.log(1 * 10),
+            "min": math.log(1 / 10),
+        }
+
         if self.strategy == "cat_sz":
-            self.input_dim = self.s_dim * 2 + self.z_dim
+            self.input_dim = s_dim * 2 + z_dim
         elif self.strategy == "cat_s_zdouble":
-            self.input_dim = self.s_dim * 2 + self.z_dim * 2
+            self.input_dim = s_dim * 2 + z_dim * 2
+        elif self.strategy == "cat_s_m_only_z":
+            self.input_dim = s_dim + z_dim
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
 
-        # pair_emb → 128
         self.mlp_pair = nn.Sequential(
+            nn.LayerNorm(self.input_dim),
             nn.Linear(self.input_dim, mid_dim),
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(mid_dim, 128),
         )
 
-        # prot_s → 128
         self.mlp_prot = nn.Sequential(
-            nn.Linear(self.s_dim, mid_dim),
+            nn.LayerNorm(s_dim),
+            nn.Linear(s_dim, mid_dim),
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(mid_dim, 128),
@@ -349,38 +386,77 @@ class HYPMLPPairRanker(PairRanker):
 
     def single_forward(
         self,
-        s_inputs_p: torch.Tensor = None,
-        s_inputs_m: torch.Tensor = None,
-        s_p: torch.Tensor = None,
-        s_m: torch.Tensor = None,
-        z_pm: torch.Tensor = None,
-        z_mp: torch.Tensor = None,
-        prot_s: torch.Tensor = None,   # 新增
+        s_inputs_p=None,
+        s_inputs_m=None,
+        s_p=None,
+        s_m=None,
+        z_pm=None,
+        z_mp=None,
+        prot_s=None,
+        ecfp=None,
     ):
-        # pair embedding
         if self.strategy == "cat_sz":
             pair_emb = torch.cat([s_p, s_m, z_pm], dim=1)
         elif self.strategy == "cat_s_zdouble":
             pair_emb = torch.cat([s_p, s_m, z_pm, z_mp], dim=1)
+        elif self.strategy == "cat_s_m_only_z":
+            pair_emb = torch.cat([s_m, z_pm], dim=1)
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
 
-        # --- 1. MLP 投影 ---
-        pair_u = self.mlp_pair(pair_emb)  # (B, 128)
-        prot_u = self.mlp_prot(prot_s)    # (B, 128)
+        curv_clamped = self.curv.clamp(min=self._curv_minmax["min"], max=self._curv_minmax["max"])
+        kappa = curv_clamped.exp()
 
-        # --- 2. exp map ---
-        pair_h = exp_map0(pair_u)  # (B, 128)
-        prot_h = exp_map0(prot_u)  # (B, 128)
+        pair_u = self.mlp_pair(pair_emb)
+        prot_u = self.mlp_prot(prot_s)
 
-        # --- 3. 距离 + 角度 ---
-        dist = torch.diag(pairwise_dist(pair_h, prot_h))  # (B,)
-        angle = oxy_angle(pair_h, prot_h)                 # (B,)
+        self.protein_alpha.data = torch.clamp(self.protein_alpha.data, max=0.0)
+        self.ligand_alpha.data = torch.clamp(self.ligand_alpha.data, max=0.0)
 
-        # --- 4. 线性组合 ---
-        pred = self.alpha * dist + (1-self.alpha) * angle      # (B,)
+        prot_u_norm = prot_u.norm(dim=-1, keepdim=True) + 1e-8
+        prot_u_unit = prot_u / prot_u_norm
+        prot_u_scale = 0.5 + prot_u_norm * self.protein_alpha.exp()
+        prot_u_scaled = prot_u_unit * prot_u_scale
 
-        return {"pred": pred}
+        pair_u_norm = pair_u.norm(dim=-1, keepdim=True) + 1e-8
+        pair_u_unit = pair_u / pair_u_norm
+        pair_u_scale = 1.5 + pair_u_norm * self.ligand_alpha.exp()
+        pair_u_scaled = pair_u_unit * pair_u_scale
+
+        with torch.autocast(pair_u_scaled.device.type, dtype=torch.float32):
+            prot_h = exp_map0(prot_u_scaled, curv=kappa)
+            pair_h = exp_map0(pair_u_scaled, curv=kappa)
+
+        dist = torch.diag(pairwise_dist(pair_h, prot_h, curv=kappa))
+        ext = oxy_angle(prot_h, pair_h, curv=kappa)
+        omega = half_aperture(prot_h, curv=kappa)
+        cos_val = oxy_cos_safe(prot_h, pair_h, curv=kappa).clamp(-0.9999, 0.9999)
+        cos_eu = oxy_tangent_cos(pair_h, prot_h).clamp(-0.9999, 0.9999)
+
+        if self.fusion_mode == "dist":
+            pred = -dist
+        else:
+            raise ValueError(f"Unknown fusion_mode: {self.fusion_mode}")
+
+        return {
+            "pred": pred,
+            "dist": dist,
+            "angle": ext,
+            "omega": omega,
+            "pair_u": pair_u,
+            "prot_u": prot_u,
+            "pair_emb": pair_emb,
+            "prot_emb": prot_s,
+            "pair_u_scaled": pair_u_scaled,
+            "prot_u_scaled": prot_u_scaled,
+            "pair_h": pair_h,
+            "prot_h": prot_h,
+            "cos": cos_val,
+            "cos_eu": cos_eu,
+            "prot_u_norm": torch.norm(prot_u_scaled, dim=1),
+            "pair_u_norm": torch.norm(pair_u_scaled, dim=1),
+            "ecfp": ecfp,
+        }
 
 
 class ResidualMLPBlock(nn.Module):
