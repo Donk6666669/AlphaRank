@@ -244,7 +244,7 @@ class PipelineRunner:
         protein_lmdb = f"{self.lmdb_dir_container}/{self.project_name}_protein.lmdb"
         
         cmd = (
-            f"python test_scripts/transform.py"
+            f"PYTHONPATH=/project python test_scripts/transform.py"
             f" --old_lmdb {pair_lmdb}"
             f" --json_path {pair_json}"
             f" --new_lmdb {new_lmdb}"
