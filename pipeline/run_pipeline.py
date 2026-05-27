@@ -284,9 +284,10 @@ class PipelineRunner:
         result_host_src = Path(self.host_project_dir) / "output" / self.project_name / "results"
         result_host_dst = Path(self.workspace_dir) / "output" / self.project_name / "results"
         if result_host_src.exists():
-            if result_host_dst.exists():
-                shutil.rmtree(result_host_dst)
-            shutil.copytree(result_host_src, result_host_dst)
+            if result_host_src.resolve() != result_host_dst.resolve():
+                if result_host_dst.exists():
+                    shutil.rmtree(result_host_dst)
+                shutil.copytree(result_host_src, result_host_dst)
             print(f"✅ Inference完成！结果已保存至: {result_host_dst}")
             for csv in result_host_dst.glob("*.csv"):
                 print(f"   📄 {csv}")
