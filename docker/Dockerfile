@@ -198,6 +198,8 @@ RUN conda install -y \
     torchvision==0.18.1 \
     torchaudio==2.3.1 \
     pytorch-cuda=12.1 \
+    "mkl<2025" \
+    "intel-openmp<2025" \
     -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch \
     -c https://mirrors.sustech.edu.cn/anaconda-extra/cloud/nvidia \
     && conda clean -y --all
