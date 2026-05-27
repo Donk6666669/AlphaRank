@@ -1,0 +1,55 @@
+# ProtenixAffinity Pipeline 配置文件
+# 复制此文件为 config.yaml 并根据实际情况修改
+
+# ========== 项目配置 ==========
+project:
+  name: "AlphaRank"  # 项目名称（用于命名输出文件）
+  mode: "full"        # full | generate_only | from_lmdb
+
+# ========== 输入文件 ==========
+input:
+  fasta: "/msa/data/wukelin/protein.fasta"     # 蛋白质FASTA文件（宿主机路径）
+  smi: "/msa/data/wukelin/ligands.smi"         # 小分子SMI文件（宿主机路径）
+  msa_dir: "/data/rerank/.../msa"              # MSA目录（单一运行容器内路径）
+
+# ========== 输出配置 ==========
+output:
+  # 单一运行容器输出路径（容器内路径，/data 对应宿主机 /msa/data）
+  output_dir: "/data/rerank/protenix/chembl_bdb/alpharank/output"
+  lmdb_dir: "/data/rerank/protenix/chembl_bdb/alpharank/pair"
+
+# ========== GPU配置 ==========
+gpu:
+  device: 0        # GPU编号，可以是单个数字或逗号分隔的列表（如 "0,1,2"）
+  seeds: 101       # 随机种子
+
+# ========== Docker容器配置 ==========
+containers:
+  runner:
+    name: "alpharank_hyper_decoy_wukelin"
+    host_mount:
+      base: "/home/wukelin/ProtenixAffinity2"  # 宿主机 -> 容器 /project
+      data: "/msa/data"                        # 宿主机 -> 容器 /data
+
+# ========== 高级配置 ==========
+advanced:
+  batch_run:
+    quotas: 4              # GPU配额
+  
+  lmdb:
+    map_size: 20000000000  # LMDB大小（字节），默认20GB
+  
+  protenix:
+    use_msa_server: true   # 是否使用MSA服务器
+    reduce: true           # 是否使用reduce模式
+    start: 0               # 起始索引
+
+# ========== 示例配置 ==========
+# 本配置文件提供了完整的参数说明
+# 实际使用时，可以根据需要修改相应的值
+# 
+# 注意事项：
+# 1. 路径区分宿主机路径和容器内路径
+# 2. 确保所有路径存在且可访问
+# 3. GPU编号需要根据实际可用GPU调整
+# 4. 项目名称建议使用描述性名称，避免特殊字符

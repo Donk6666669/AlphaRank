@@ -141,3 +141,52 @@ cython_debug/
 wandb/
 output/
 release_data/
+
+# Temporary / scratch scripts
+tmp*.py
+quick_check*.py
+lorentz.py
+hyptrain.py
+validation.sh
+run_unifep.sh
+run_wdr91*.sh
+batch_run.py
+
+# Raw experimental data files
+*.zip
+*.xlsx
+*.sdf
+*.pdb
+
+# Experimental / personal directories
+newtest*/
+homework/
+casp16/
+protein/
+PL-REX/
+public_binding_free_energy_benchmark/
+
+# Test results output directories
+test_scripts/results_*/
+
+# Temporary criterion file
+protenix/criterion/tmp.py
+
+# Temporary test scripts
+test_scripts/tmp.py
+test_scripts/ema.py
+test_scripts/ema_avg.py
+test_scripts/glue.py
+test_scripts/newtest*.py
+test_scripts/unifep.py
+test_scripts/view_json.py
+
+# Local conf dataset overrides (machine-specific paths)
+conf/dataset/test.yaml
+conf/dataset/test1.yaml
+conf/dataset/test2.yaml
+conf/dataset/test3.yaml
+conf/dataset/pairandlist.yaml
+
+# Local scripts
+scripts/preprocess/search.py

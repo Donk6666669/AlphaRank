@@ -1,12 +1,24 @@
+# checkpoint:
+#   _target_: lightning.pytorch.callbacks.ModelCheckpoint
+
+#   dirpath: ${paths.output_dir}/checkpoints
+#   filename: "{epoch:03d}-{step}"
+#   save_last: true
+
+#   monitor: "val/acc_rerank"
+#   mode: "max"
+#   save_top_k: 2
+
+#   verbose: true
 checkpoint:
   _target_: lightning.pytorch.callbacks.ModelCheckpoint
 
   dirpath: ${paths.output_dir}/checkpoints
-  filename: "{epoch:03d}-{step}"
+  filename: "epoch={epoch:03d}"   # 用 epoch 命名更好排序/平均
   save_last: true
 
-  monitor: "val/acc_rerank"
-  mode: "max"
-  save_top_k: 2
-
+  # 如果只是想“每个 epoch 都存”，monitor/mode 不是必须的
+  save_top_k: -1                  # 保存所有 ckpt
+  every_n_epochs: 1               # ✅ 用冒号
+  save_on_train_epoch_end: true   # 明确在训练 epoch 结束时存（默认就是 True）
   verbose: true

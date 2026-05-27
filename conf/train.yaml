@@ -41,7 +41,7 @@ project: ${oc.env:PROJECT}
 name: default
 
 # expriment id is used to name logdir, sweep subdir, wandb version
-exp_id: ${tail:${dataset._target_}}.${tail:${model._target_}}.${tail:${criterion._target_}}.${now:%Y-%m-%d_%H-%M-%S}
+exp_id: ${tail:${dataset._target_}}.${tail:${model._target_}}.${tail:${criterion._target_}}.${now:%Y-%m-%d_%H-%M-%S}   
 
 # notes about the experiment
 notes: ""

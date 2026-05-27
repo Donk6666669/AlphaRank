@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
-
+from lorentz import exp_map0, pairwise_dist, oxy_angle
 
 class PairRanker(nn.Module):
     def __init__(self, s_input_dim=449, s_dim=384, z_dim=128):
@@ -25,19 +25,38 @@ class PairRanker(nn.Module):
             "single_forward should be implemented in the subclass"
         )
 
+    # def split_forward(
+    #     self,
+    #     pm1: dict[str, torch.Tensor] = None,
+    #     pm2: dict[str, torch.Tensor] = None,
+    #     **kwargs,
+    # ):
+    #     pm1_pred = self.single_forward(**pm1)["pred"]
+    #     pm2_pred = self.single_forward(**pm2)["pred"]
+    #     return {
+    #         "pm1_pred": pm1_pred,
+    #         "pm2_pred": pm2_pred,
+    #         "pred": F.sigmoid(pm2_pred - pm1_pred),
+    #     }
     def split_forward(
         self,
         pm1: dict[str, torch.Tensor] = None,
         pm2: dict[str, torch.Tensor] = None,
+        pm3: dict[str, torch.Tensor] = None,
         **kwargs,
     ):
         pm1_pred = self.single_forward(**pm1)["pred"]
         pm2_pred = self.single_forward(**pm2)["pred"]
-        return {
+        pm3_pred = self.single_forward(**pm3)["pred"] if pm3 is not None else None
+        pred = F.sigmoid(pm2_pred - pm1_pred)
+        ret = {
             "pm1_pred": pm1_pred,
             "pm2_pred": pm2_pred,
-            "pred": F.sigmoid(pm2_pred - pm1_pred),
+            "pred": pred,
         }
+        if pm3_pred is not None:
+            ret["pm3_pred"] = pm3_pred
+        return ret
 
     def forward(self, **kwargs):
         if "pm1" in kwargs and "pm2" in kwargs:
@@ -279,6 +298,88 @@ class MLPPairRanker(PairRanker):
             raise ValueError(f"Unknown strategy: {self.strategy}")
 
         pred = self.encoder(x).squeeze(1)
+        return {"pred": pred}
+
+import torch
+import torch.nn as nn
+
+class HYPMLPPairRanker(PairRanker):
+    def __init__(
+        self,
+        s_input_dim=449,
+        s_dim=384,
+        z_dim=128,
+        mid_dim=128,
+        dropout=0.5,
+        strategy="cat_sz",
+        alpha=0.5,
+        
+    ):
+        super().__init__(s_input_dim, s_dim, z_dim)
+
+        self.mid_dim = mid_dim
+        self.dropout = dropout
+        self.strategy = strategy
+        self.alpha = alpha
+        #self.beta = beta
+
+        # 定义 input_dim（和你之前的一样）
+        if self.strategy == "cat_sz":
+            self.input_dim = self.s_dim * 2 + self.z_dim
+        elif self.strategy == "cat_s_zdouble":
+            self.input_dim = self.s_dim * 2 + self.z_dim * 2
+        else:
+            raise ValueError(f"Unknown strategy: {self.strategy}")
+
+        # pair_emb → 128
+        self.mlp_pair = nn.Sequential(
+            nn.Linear(self.input_dim, mid_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(mid_dim, 128),
+        )
+
+        # prot_s → 128
+        self.mlp_prot = nn.Sequential(
+            nn.Linear(self.s_dim, mid_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(mid_dim, 128),
+        )
+
+    def single_forward(
+        self,
+        s_inputs_p: torch.Tensor = None,
+        s_inputs_m: torch.Tensor = None,
+        s_p: torch.Tensor = None,
+        s_m: torch.Tensor = None,
+        z_pm: torch.Tensor = None,
+        z_mp: torch.Tensor = None,
+        prot_s: torch.Tensor = None,   # 新增
+    ):
+        # pair embedding
+        if self.strategy == "cat_sz":
+            pair_emb = torch.cat([s_p, s_m, z_pm], dim=1)
+        elif self.strategy == "cat_s_zdouble":
+            pair_emb = torch.cat([s_p, s_m, z_pm, z_mp], dim=1)
+        else:
+            raise ValueError(f"Unknown strategy: {self.strategy}")
+
+        # --- 1. MLP 投影 ---
+        pair_u = self.mlp_pair(pair_emb)  # (B, 128)
+        prot_u = self.mlp_prot(prot_s)    # (B, 128)
+
+        # --- 2. exp map ---
+        pair_h = exp_map0(pair_u)  # (B, 128)
+        prot_h = exp_map0(prot_u)  # (B, 128)
+
+        # --- 3. 距离 + 角度 ---
+        dist = torch.diag(pairwise_dist(pair_h, prot_h))  # (B,)
+        angle = oxy_angle(pair_h, prot_h)                 # (B,)
+
+        # --- 4. 线性组合 ---
+        pred = self.alpha * dist + (1-self.alpha) * angle      # (B,)
+
         return {"pred": pred}
 
 

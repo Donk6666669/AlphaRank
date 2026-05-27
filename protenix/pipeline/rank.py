@@ -1,6 +1,6 @@
 import logging
 from typing import Any, Dict
-
+import torch
 from hydra.utils import instantiate
 from lightning import LightningModule
 
@@ -75,34 +75,106 @@ class RankLitModule(LightningModule):
             sync_dist=True,
         )
 
+    # def step(self, batch: Any):
+    #     criterion_inputs = {
+    #         "label": batch.pop("label", None),
+    #         "hard": batch.pop("hard", None),
+    #         "idx": batch.pop("idx"),
+    #     }
+    #     #print("Model outputs keys:", model_out.keys())
+    #     criterion_inputs.update(self.model(**batch))
+    #     outputs = self.criterion(criterion_inputs)
+    #     return outputs
     def step(self, batch: Any):
         criterion_inputs = {
-            "label": batch.pop("label"),
-            "hard": batch.pop("hard"),
+            "label": batch.pop("label", None),
+            "hard": batch.pop("hard", None),
             "idx": batch.pop("idx"),
         }
-        criterion_inputs.update(self.model(**batch))
+
+        model_outputs = self.model(**batch)  # 先保存
+        #print("Model outputs keys:", model_outputs.keys())  # 打印所有 key
+        # print("Model outputs:", model_outputs)  # 如果要看详细内容可以用这个
+
+        criterion_inputs.update(model_outputs)
         outputs = self.criterion(criterion_inputs)
         return outputs
 
     def on_train_epoch_start(self):
         self.criterion.reset()
 
+    # def training_step(self, batch: Any, batch_idx: int):
+    #     outputs = self.step(batch)
+
+    #     log_interval = 10
+    #     if self.global_step % log_interval == 0:
+    #         for key, value in outputs.items():
+    #             self.log(
+    #                 f"train/{key}",
+    #                 value,
+    #                 on_step=True,
+    #                 on_epoch=False,
+    #                 prog_bar=True,
+    #                 sync_dist=True,
+    #             )
+    #     return outputs["loss"]
+    # def training_step(self, batch: Any, batch_idx: int):
+    #     outputs = self.step(batch)
+
+    #     log_interval = 10
+    #     if self.global_step % log_interval == 0:
+    #         for key, value in outputs.items():
+    #             # 如果value是tensor且元素数目大于1，就调用mean()
+    #             if isinstance(value, torch.Tensor) and value.numel() > 1:
+    #                 value = value.mean()
+
+    #             self.log(
+    #                 f"train/{key}",
+    #                 value,
+    #                 on_step=True,
+    #                 on_epoch=False,
+    #                 prog_bar=True,
+    #                 sync_dist=True,
+    #             )
+    #     loss = outputs["loss"]  # 假设这里是一个 tensor，可能是多个元素
+    #     if loss.dim() > 0:
+    #         loss = loss.mean()  # 把loss变成标量
+
+    #     self.log("train/loss", loss)
+    #     return loss
+        #return outputs["loss"]
     def training_step(self, batch: Any, batch_idx: int):
         outputs = self.step(batch)
 
         log_interval = 10
         if self.global_step % log_interval == 0:
             for key, value in outputs.items():
+                if key == "loss":
+                    # 跳过 loss，后面单独处理
+                    continue
+
+                if isinstance(value, torch.Tensor) and value.numel() > 1:
+                    log_value = value.mean()
+                else:
+                    log_value = value
+
                 self.log(
                     f"train/{key}",
-                    value,
+                    log_value,
                     on_step=True,
                     on_epoch=False,
                     prog_bar=True,
                     sync_dist=True,
                 )
-        return outputs["loss"]
+
+        loss = outputs["loss"]
+        if isinstance(loss, torch.Tensor) and loss.dim() > 0:
+            loss = loss.mean()
+
+        self.log("train/loss", loss, on_step=True, on_epoch=False, prog_bar=True, sync_dist=True)
+        return loss
+
+
 
     def on_validation_epoch_start(self):
         # https://lightning.ai/docs/pytorch/stable/common/lightning_module.html#lightning-hooks

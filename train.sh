@@ -1104,20 +1104,26 @@
 #     dataset.dataset_args.train.meta_split=train_3.5w_100 \
 #     name=3.5w_triplet_100_rerank
 
-python train.py experiment=3w_pair_rerank \
-    dataset=5w_pair_100 \
-    trainer.max_epochs=50 \
-    name=5w_pair_100_rerank_50epoch
+# python train.py experiment=3w_pair_rerank \
+#     dataset=5w_pair_100 \
+#     trainer.max_epochs=50 \
+#     name=5w_pair_100_rerank_50epoch
+
+# python train.py experiment=3w_pair_rerank \
+#     dataset=5w_pair_100 \
+#     trainer.max_epochs=50 \
+#     scheduler=cosine_annealing \
+#     name=5w_pair_100_rerank_50epoch_lrdecay
+
+# python train.py experiment=3w_pair_rerank \
+#     dataset=5w_pair_100 \
+#     trainer.max_epochs=50 \
+#     scheduler=cosine_annealing \
+#     scheduler.num_warmup_steps=200 \
+#     name=5w_pair_100_rerank_50epoch_lrdecay_warmup
 
 python train.py experiment=3w_pair_rerank \
-    dataset=5w_pair_100 \
-    trainer.max_epochs=50 \
-    scheduler=cosine_annealing \
-    name=5w_pair_100_rerank_50epoch_lrdecay
-
-python train.py experiment=3w_pair_rerank \
-    dataset=5w_pair_100 \
-    trainer.max_epochs=50 \
-    scheduler=cosine_annealing \
-    scheduler.num_warmup_steps=200 \
-    name=5w_pair_100_rerank_50epoch_lrdecay_warmup
+    dataset=test3 \
+    trainer.max_epochs=60 \
+    name=5w_pair_100_rerank_50epoch \
+    +trainer.limit_val_batches=0.0

@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Union
 
 import lmdb
+import numpy as np
+import torch
 import zstandard as zstd
 
 logger = logging.getLogger(__name__)
@@ -85,18 +87,13 @@ class LMDBDataset:
         self.env.close()
 
     def _get_value(self, db: str, key: str, default: Any = None) -> Any:
-        for _ in range(self.MAX_WRITE_RETRY_WHEN_LOCK):
-            try:
-                with self.env.begin(db=self.db[db], write=False) as txn:
-                    value = txn.get(key.encode())
-                break
-            except Exception as e:
-                time.sleep(self.RETRY_INTERVAL)
-        else:
-            raise Exception(
-                f"Failed to read after {self.MAX_WRITE_RETRY_WHEN_LOCK} retries"
-            )
-
+        try:
+            with self.env.begin(db=self.db[db], write=False) as txn:
+                value = txn.get(key.encode())
+            
+        except Exception as e:
+            value = None
+        
         if value is not None:
             if self.compressed:
                 value = self.decompress(value)
@@ -316,3 +313,445 @@ class LMDBDataset:
             return result
         else:
             raise StopIteration
+
+
+# ============================================================================
+# ECFP Fingerprint Calculation Function
+# ============================================================================
+
+def smiles_to_ecfp(smiles, n_bits=1024):
+    """
+    Convert SMILES string to ECFP (Morgan) fingerprint.
+    
+    Args:
+        smiles: SMILES string representation of molecule
+        n_bits: Number of bits in fingerprint (default: 1024)
+    
+    Returns:
+        torch.Tensor: Fingerprint as float tensor of shape (n_bits,)
+    """
+    if not smiles or not isinstance(smiles, str):
+        return torch.zeros(n_bits, dtype=torch.float32)
+    
+    try:
+        from rdkit import Chem
+        from rdkit.Chem import AllChem
+        
+        mol = Chem.MolFromSmiles(smiles)
+        if mol is None:
+            return torch.zeros(n_bits, dtype=torch.float32)
+        
+        # Morgan fingerprint with radius=2
+        fp = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=n_bits)
+        return torch.from_numpy(np.array(fp)).float()
+        
+    except Exception:
+        return torch.zeros(n_bits, dtype=torch.float32)
+
+
+# ============================================================================
+# Augmented LMDB Dataset with ECFP Features
+# ============================================================================
+
+class AugmentedLMDBDataset(LMDBDataset):
+    """
+    Extended LMDBDataset that augments data with ECFP fingerprint features.
+    
+    This dataset loads the original 5 tensors from the main LMDB and computes
+    a 6th tensor (ECFP fingerprint) by:
+    1. Looking up metadata in a separate meta LMDB
+    2. Extracting SMILES string
+    3. Computing Morgan fingerprint
+    
+    Args:
+        lmdb_path: Path to main data LMDB
+        meta_lmdb_path: Path to metadata LMDB containing SMILES strings
+        compressed: Whether data is compressed (default: True)
+        **kwargs: Additional arguments passed to parent LMDBDataset
+    """
+    
+    def __init__(
+        self, 
+        lmdb_path, 
+        meta_lmdb_path="/data/rerank/protenix/chembl_bdb/chembl_bdb_meta.lmdb", 
+        compressed=True, 
+        **kwargs
+    ):
+        # Initialize parent class (main data)
+        super().__init__(lmdb_path, compressed=compressed, **kwargs)
+        
+        # Initialize Meta Dataset (for SMILES lookup)
+        self.meta_dataset = LMDBDataset(
+            meta_lmdb_path, 
+            compressed=compressed, 
+            readonly=True, 
+            enable_cache=False
+        )
+
+    def __imp_getitem__(self, key):
+        """
+        Override to return 6 tensors instead of 5.
+        
+        Returns:
+            tuple: (t1, t2, t3, t4, t5, t6_ecfp)
+                   where t6_ecfp is the ECFP fingerprint
+        """
+        # 1. Get the real key from split
+        if isinstance(key, int):
+            real_key = self.get_split(self.default_split)[key]
+        else:
+            real_key = key
+             
+        # 2. Get original 5 tensors
+        original_data = super().__imp_getitem__(real_key)
+        if original_data is None:
+            return None
+
+        # 3. Compute 6th tensor (ECFP fingerprint)
+        t6_ecfp = torch.zeros(1024, dtype=torch.float32)
+        
+        try:
+            # Extract ID from key: "subdir/ID" -> "ID"
+            meta_key = real_key.split('/')[-1]
+            
+            # Get metadata from meta database
+            meta_info = self.meta_dataset._get_value(
+                self.meta_dataset.DATA_DB, 
+                meta_key
+            )
+            
+            if meta_info is not None:
+                # Deserialize if needed
+                if isinstance(meta_info, bytes):
+                    meta_info = pkl.loads(meta_info)
+                
+                # Extract SMILES and compute fingerprint
+                if 'sequences' in meta_info:
+                    smiles = meta_info['sequences'][1]['ligand']['ligand']
+                    t6_ecfp = smiles_to_ecfp(smiles, n_bits=1024)
+                    
+        except Exception:
+            # Silently fail, return zero vector
+            pass
+            
+        # 4. Return 6 tensors
+        return (*original_data, t6_ecfp)
+
+    def close(self):
+        """Close both main and meta datasets."""
+        if hasattr(self, 'meta_dataset'):
+            self.meta_dataset.close()
+        super().close()
+# import logging
+# import pickle as pkl
+# import time
+# from functools import lru_cache
+# from pathlib import Path
+# from typing import Any, Dict, List, Union
+
+# import lmdb
+# import zstandard as zstd
+
+# logger = logging.getLogger(__name__)
+
+# # 1T map_size, ref: https://lmdb.readthedocs.io/en/release/#environment-class
+# MAP_SIZE = 1 * 1024 * 1024 * 1024 * 1024  # 10T
+
+
+# class LMDBDataset:
+#     """
+#     split:
+#         full: "key1,key2,..."
+#         dataset1: "key1,key2,..."
+#         dataset2: "key2,key3,..."
+#         train: "key1,key2,..."
+#         val: "key3,key4,..."
+#     data:
+#         key1: pkl.dump({k1: v11, k2: v12, ...})
+#         key2: pkl.dump({k1: v21, k2: v22, ...})
+#     """
+
+#     SPLIT_DB = "split"
+#     DATA_DB = "data"
+#     MAX_CACHE_SIZE = 16
+#     MAX_WRITE_RETRY_WHEN_LOCK = 10
+#     RETRY_INTERVAL = 5
+
+#     def __init__(
+#         self,
+#         lmdb_path: Union[str, Path],
+#         compressed: bool = True,
+#         readonly: bool = True,
+#         enable_cache: bool = True,
+#     ):
+#         self.lmdb_path = Path(lmdb_path).resolve()
+#         self.compressed = compressed
+#         if self.compressed:
+#             self.compressor = zstd.ZstdCompressor(level=3)
+#             self.decompressor = zstd.ZstdDecompressor()
+#         self.readonly = readonly
+#         self.enable_cache = enable_cache
+
+#         for _ in range(self.MAX_WRITE_RETRY_WHEN_LOCK):
+#             try:
+#                 self.env = lmdb.open(
+#                     str(self.lmdb_path),
+#                     max_dbs=2,
+#                     map_size=MAP_SIZE,
+#                     readonly=readonly,
+#                     lock=not readonly,
+#                     create=not readonly,
+#                 )
+#                 break
+#             except Exception as e:
+#                 raise
+#                 time.sleep(self.RETRY_INTERVAL)
+#         else:
+#             raise Exception(
+#                 f"Failed to open lmdb after {self.MAX_WRITE_RETRY_WHEN_LOCK} retries"
+#             )
+#         self.db = {
+#             db_name: self.env.open_db(db_name.encode())
+#             for db_name in [self.SPLIT_DB, self.DATA_DB]
+#         }
+#         self._splits = dict()
+#         self.default_split = "full"
+
+#     def compress(self, content: bytes) -> bytes:
+#         content = self.compressor.compress(content)
+#         return content
+
+#     def decompress(self, content: bytes) -> bytes:
+#         content = self.decompressor.decompress(content)
+#         return content
+
+#     def close(self):
+#         self.env.close()
+
+#     def _get_value(self, db: str, key: str, default: Any = None) -> Any:
+#         try:
+#             with self.env.begin(db=self.db[db], write=False) as txn:
+#                 value = txn.get(key.encode())
+            
+#         except Exception as e:
+#             value = None
+        
+#         if value is not None:
+#             if self.compressed:
+#                 value = self.decompress(value)
+#         else:
+#             logger.warning(f"Key {key} not found in {db}")
+#             value = default
+#         return value
+
+#     def _set_value(self, db: str, key: str, value: bytes):
+#         if self.compressed:
+#             value = self.compress(value)
+
+#         for _ in range(self.MAX_WRITE_RETRY_WHEN_LOCK):
+#             try:
+#                 with self.env.begin(db=self.db[db], write=True) as txn:
+#                     txn.put(key.encode(), value)
+#                 return
+#             except Exception as e:
+#                 time.sleep(self.RETRY_INTERVAL)
+#         raise Exception(
+#             f"Failed to write after {self.MAX_WRITE_RETRY_WHEN_LOCK} retries"
+#         )
+
+#     def _get_values(
+#         self, db: str, keys: List[str], ori: bool = False
+#     ) -> Dict[str, Any]:
+#         """better for data construction with large data size."""
+#         values = {}
+#         for _ in range(self.MAX_WRITE_RETRY_WHEN_LOCK):
+#             try:
+#                 with self.env.begin(db=self.db[db], write=False) as txn:
+#                     for key in keys:
+#                         value = txn.get(key.encode())
+#                         values[key] = value
+#                 for key, value in values.items():
+#                     if value is not None and self.compressed and not ori:
+#                         values[key] = self.decompress(value)
+#                 return values
+#             except Exception:
+#                 time.sleep(self.RETRY_INTERVAL)
+#         raise Exception(
+#             f"Failed to read after {self.MAX_WRITE_RETRY_WHEN_LOCK} retries"
+#         )
+
+#     def _set_values(self, db: str, data: Dict[str, Any], ori: bool = False):
+#         """better for data construction with large data size."""
+#         compressed = []
+#         for key, value in data.items():
+#             if self.compressed and not ori:
+#                 value = self.compress(value)
+#             compressed.append((key, value))
+
+#         for _ in range(self.MAX_WRITE_RETRY_WHEN_LOCK):
+#             try:
+#                 with self.env.begin(db=self.db[db], write=True) as txn:
+#                     for key, value in compressed:
+#                         txn.put(key.encode(), value)
+#                 return
+#             except Exception:
+#                 time.sleep(self.RETRY_INTERVAL)
+#         raise Exception(
+#             f"Failed to write after {self.MAX_WRITE_RETRY_WHEN_LOCK} retries"
+#         )
+
+#     def _smart_decode_list(self, value: bytes) -> List[Any]:
+#         try:
+#             return value.decode().split(",")
+#         except Exception:
+#             return pkl.loads(value)
+
+#     def _smart_encode_list(self, value: List[Any]) -> bytes:
+#         if len(value) == 0:
+#             return pkl.dumps([])
+#         elif type(value[0]) == str:
+#             return ",".join(value).encode()
+#         else:
+#             return pkl.dumps(value)
+
+#     def get_split(self, key: str) -> List[str]:
+#         if key not in self._splits or not self.enable_cache:
+#             split_save = self._get_value(self.SPLIT_DB, key)
+#             if split_save is None:
+#                 return []
+#             else:
+#                 self._splits[key] = self._smart_decode_list(split_save)
+#         return self._splits[key]
+
+#     def set_split(
+#         self,
+#         split: str,
+#         keys: List[str],
+#         append: bool = False,
+#         deduplicate: bool = True,
+#         update_full: bool = False,
+#     ):
+#         if append:
+#             keys = self.get_split(split) + keys
+
+#         if deduplicate:
+#             keys = list(sorted(list(set(keys))))
+
+#         self._set_value(self.SPLIT_DB, split, self._smart_encode_list(keys))
+#         self._splits[split] = keys
+#         if (
+#             split != "full"
+#             and update_full
+#             and len(keys) > 0
+#             and type(keys[0]) == str
+#         ):
+#             self.update_full_split()
+
+#     def update_full_split(self, from_data: bool = False):
+#         keys = []
+#         if from_data:
+#             with self.env.begin(db=self.db[self.DATA_DB], write=False) as txn:
+#                 keys = [
+#                     key.decode() for key in txn.cursor().iternext(values=False)
+#                 ]
+#         else:  # from split
+#             with self.env.begin(db=self.db[self.SPLIT_DB], write=False) as txn:
+#                 splits = [
+#                     key.decode() for key in txn.cursor().iternext(values=False)
+#                 ]
+#             for split in splits:
+#                 if split != "full":
+#                     keys.extend(self.get_split(split))
+#                     keys = list(sorted(list(set(keys))))
+#         if not self.readonly:
+#             self.set_split("full", keys)
+#         else:
+#             self._splits["full"] = keys
+
+#     def check_keys(self):
+#         with self.env.begin(db=self.db[self.DATA_DB], write=False) as txn:
+#             keys = [key.decode() for key in txn.cursor().iternext(values=False)]
+#         full_keys = self.get_split("full")
+
+#         missing_keys = list(set(full_keys) - set(keys))
+#         if len(missing_keys) > 0:
+#             print(f"Missing keys: {missing_keys}")
+
+#         orphan_keys = list(set(keys) - set(full_keys))
+#         if len(orphan_keys) > 0:
+#             print(f"Orphan keys: {orphan_keys}")
+
+#         if len(missing_keys) + len(orphan_keys) == 0:
+#             print("All keys are in place")
+
+#     def __getitem__(self, key: Union[str, int]) -> Dict[str, Any]:
+#         if self.enable_cache:
+#             return self.__cache_getitem__(key)
+#         else:
+#             return self.__imp_getitem__(key)
+
+#     @lru_cache(maxsize=MAX_CACHE_SIZE)
+#     def __cache_getitem__(self, key: Union[str, int]) -> Dict[str, Any]:
+#         return self.__imp_getitem__(key)
+
+#     def __imp_getitem__(self, key: Union[str, int]) -> Dict[str, Any]:
+#         if type(key) == int:
+#             key = self.get_split(self.default_split)[key]
+#         data = self._get_value(self.DATA_DB, key)
+#         if data is not None:
+#             data = pkl.loads(data)
+#         return data
+
+#     def __setitem__(self, key: str, value: Dict[str, Any]) -> None:
+#         self._set_value(self.DATA_DB, key, pkl.dumps(value))
+
+#     def write_data(
+#         self, data: Dict[str, Dict[str, Any]], ori: bool = False
+#     ) -> None:
+#         """when writing large amount of data, use `write_data` to call
+#         _set_values instead of __setitem__"""
+#         if not ori:
+#             data = {key: pkl.dumps(value) for key, value in data.items()}
+#         self._set_values(self.DATA_DB, data)
+
+#     def get_data(
+#         self, keys: List[str], ori: bool = False
+#     ) -> Dict[str, Dict[str, Any]]:
+#         """when reading large amount of data, use `get_data` to call
+#         _get_values instead of __getitem__"""
+#         data = self._get_values(self.DATA_DB, keys)
+#         if not ori:
+#             data = {key: pkl.loads(value) for key, value in data.items()}
+#         return data
+
+#     def __contains__(self, key: str) -> bool:
+#         with self.env.begin(db=self.db[self.DATA_DB], write=False) as txn:
+#             return txn.get(key.encode()) is not None
+
+#     def set_default_split(self, split: str) -> None:
+#         self.default_split = split
+#         if self.enable_cache:
+#             self.__cache_getitem__.cache_clear()
+
+#     def __len__(self) -> int:
+#         keys = self.get_split(self.default_split)
+#         return len(keys)
+
+#     def summary(self) -> Dict[str, int]:
+#         self.update_full_split()
+#         return {split: len(keys) for split, keys in self._splits.items()}
+
+#     def __repr__(self) -> str:
+#         return f"LMDBDataset({self.lmdb_path})"
+
+#     def __iter__(self):
+#         self._iter_index = 0
+#         return self
+
+#     def __next__(self):
+#         if self._iter_index < len(self):
+#             result = self[self._iter_index]
+#             self._iter_index += 1
+#             return result
+#         else:
+#             raise StopIteration

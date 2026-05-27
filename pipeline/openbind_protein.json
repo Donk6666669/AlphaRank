@@ -1,0 +1,17 @@
+[
+  {
+    "name": "EV-A71_2A",
+    "sequences": [
+      {
+        "proteinChain": {
+          "sequence": "GKFGQQSGAIYVGNYRVVNRHLATHNDWANLVWEDSSRDLLVSSTTAQGCDTIARCDCQTGVYYCSSRRKHYPVSFSKPSLIFVEASEYYPARYQSHLMLAVGHSEPGDCGGILRCQHGVVGIVSTGGNGLVGFADVRDLLWLDEEAMEQ",
+          "count": 1,
+          "msa": {
+            "precomputed_msa_dir": "/data/rerank/protenix/chembl_bdb/openbind/msa",
+            "pairing_db": "uniref100"
+          }
+        }
+      }
+    ]
+  }
+]

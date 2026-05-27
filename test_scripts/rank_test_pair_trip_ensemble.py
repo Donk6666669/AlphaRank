@@ -55,6 +55,7 @@ ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-20
 ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-20_11-48-17/checkpoints/epoch=022-step=690.ckpt"
 
 ckpt_path = "/log/train/af3rank/DataModule.MLPPairRanker.RankCriterion.2025-05-20_18-22-56/checkpoints/epoch=049-step=800.ckpt"
+ckpt_path = "/log/train/alpharank/DataModule.MLPPairRanker.ListListRankCriterion.2025-08-20_10-13-04/checkpoints/ema_epoch20-29.ckpt"#############################################只用pair
 #ckpt_path = "/log/train/af3rank/DataModule.MLPPairRanker.RankCriterion.2025-05-20_19-17-26/checkpoints/epoch=049-step=800.ckpt"
 #ckpt_path = "/log/train/af3rank/DataModule.MLPPairRanker.RankCriterion.2025-05-20_20-42-26/checkpoints/epoch=098-step=1584.ckpt"
 
@@ -259,10 +260,10 @@ available_targets = {
 # Configuration
 # ---------------------------
 
-#test_set = "merck"
+test_set = "merck"
 test_set = "jacs"
 data_paths = [f"/data/{test_set}_triplet_no_order/"]
-data_paths = [f"/data/{test_set}_triplet_lmdb/"]
+data_paths = [f"/data/wukelin/{test_set}_triplet_lmdb/"]
 #data_paths = [f"/data/{test_set}_triplet_constraint_new"]
 ckpt_path = "/data/checkpoints/DataModule.MLPTripletRanker.RankCriterion.2025-05-12_11-09-46/checkpoints/last.ckpt"
 #ckpt_path = "/data/checkpoints/DataModule.MLPTripletRanker.RankCriterion.2025-05-12_11-37-09/checkpoints/epoch=024-step=7325.ckpt"
@@ -281,7 +282,7 @@ ckpt_path = "/log/train/af3rank/DataModule.MLPTripletRanker.RankCriterion.2025-0
 #ckpt_path = "/data/checkpoints/DataModule.MLPTripletRanker.RankCriterion.2025-05-12_20-10-41/checkpoints/epoch=024-step=7325.ckpt"
 
 ckpt_path = "/data/checkpoints/DataModule.MLPTripletRanker.RankCriterion.2025-05-25_14-41-40/checkpoints/epoch=021-step=550.ckpt"
-
+ckpt_path = "/data/wukelin/checkpoints/DataModule.MLPTripletRanker.RankCriterion.2025-05-25_14-41-40/checkpoints/epoch=021-step=550.ckpt"
 
 strategy = "s_input"
 strategy = 'cat_s_m1_m2_z_pm1_pm2'
@@ -455,6 +456,8 @@ with torch.no_grad():
         lig1_names = batch["lig1"]
         lig2_names = batch["lig2"]
         #print(len(targets))
+        #print("Available targets in results:", list(results.keys()))
+        #print("Trying to access:", targets, lig1_names)
         pair_score1_lis = [results[target][lig1] for target, lig1 in zip(targets, lig1_names)]
         pair_score2_lis = [results[target][lig2] for target, lig2 in zip(targets, lig2_names)]
 

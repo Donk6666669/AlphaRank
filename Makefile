@@ -4,19 +4,19 @@
 
 # run on host, build and start container
 init:
-	python docker.py startd --build
+	python3 docker.py startd --build
 
 # run on host, start container but do not build
 start:
-	python docker.py startd
+	python3 docker.py startd
 
 # run on host, enter container
 in:
-	python docker.py
+	python3 docker.py
 
 # run on host, enter container as root
 root:
-	python docker.py --root
+	python3 docker.py --root
 
 # run on host
 copy_git:

@@ -55,6 +55,7 @@ ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-20
 ckpt_path = "/data/checkpoints/DataModule.MLPPairRanker.RankCriterion.2025-05-20_11-48-17/checkpoints/epoch=022-step=690.ckpt"
 
 ckpt_path = "/log/train/af3rank/DataModule.MLPPairRanker.RankCriterion.2025-05-20_18-22-56/checkpoints/epoch=049-step=800.ckpt"
+ckpt_path = "/log/train/alpharank/DataModule.MLPPairRanker.ListListRankCriterion.2025-08-13_01-20-50/checkpoints/last.ckpt"
 #ckpt_path = "/log/train/af3rank/DataModule.MLPPairRanker.RankCriterion.2025-05-20_19-17-26/checkpoints/epoch=049-step=800.ckpt"
 #ckpt_path = "/log/train/af3rank/DataModule.MLPPairRanker.RankCriterion.2025-05-20_20-42-26/checkpoints/epoch=098-step=1584.ckpt"
 
@@ -230,7 +231,7 @@ spearman_corrs = []
 
 for target in df["targets"].unique():
     target = target.lower()
-    path = f"./benchmark/dataset/fep/public_binding_free_energy_benchmark/fep_benchmark_inputs/structure_inputs/{test_set}/{target}_edges.csv"
+    path = f"/data/wukelin/{test_set}/{target}_edges.csv"
     #read the csv file
     df_target = pd.read_csv(path)
     #print(df_target.columns)
@@ -267,7 +268,19 @@ for target in df["targets"].unique():
         
         preds.append(pred_delta)
     # Compute direction accuracy: how often the sign of predicted ddG matches the actual ddG
-    preds = (preds - np.min(preds)) / (np.max(preds) - np.min(preds)) * 2 - 1
+
+    #preds = (preds - np.min(preds)) / (np.max(preds) - np.min(preds)) * 2 - 1
+
+
+    preds_min = np.min(preds)
+    preds_max = np.max(preds)
+
+    if preds_max == preds_min:
+        # 如果所有值都一样，归一化没意义，可以赋予一个固定值或者跳过这组数据
+        preds = np.zeros_like(preds)  # 全0，或者全1都可以
+    else:
+        preds = (preds - preds_min) / (preds_max - preds_min) * 2 - 1
+
     preds = np.array(preds)
     dir_labels = [0 if label < 0 else 1 for label in labels]
     dir_labels = (np.array(labels) > 0).astype(int)
@@ -328,7 +341,7 @@ per_target_results = {}
 
 for target in df["targets"].unique():
     target_lower = target.lower()
-    sdf_path = f"./benchmark/dataset/fep/public_binding_free_energy_benchmark/fep_benchmark_inputs/structure_inputs/{test_set}/{target_lower}_ligands.sdf"
+    sdf_path = f"/data/wukelin/{test_set}/{target_lower}_ligands.sdf"
     
     if not os.path.exists(sdf_path):
         print(f"SDF file not found for {target_lower}")

@@ -2,6 +2,45 @@
 
 A trainable PyTorch reproduction of [AlphaFold 3](https://www.nature.com/articles/s41586-024-07487-w).
 
+## ProtenixAffinity 一键亲和力预测 Pipeline
+
+本仓库已集成蛋白-小分子亲和力预测自动化流程，可从 FASTA + SMI + 预计算 MSA 一键生成最终打分 CSV。完整流程现在统一在单个 Docker 容器 `alpharank_hyper_decoy_wukelin` 中执行：Protenix pair embedding、LMDB 转换、protein LMDB 抽取和 openbind ranking inference 都不再依赖第二个容器。
+
+最小运行方式：
+
+```bash
+cd /home/wukelin/ProtenixAffinity
+
+python pipeline/run_pipeline.py \
+  --fasta /path/to/protein.fasta \
+  --smi /path/to/ligands.smi \
+  --msa_dir /data/rerank/protenix/chembl_bdb/openbind/msa \
+  --project_name AlphaRank \
+  --output_dir /data/rerank/protenix/chembl_bdb/alpharank/output \
+  --lmdb_dir /data/rerank/protenix/chembl_bdb/alpharank/pair \
+  --ckpt_path /log/train/alpharank_hyper_decoy_new/DataModule.HYPMLPPairRanker.ListListRankCriterion.2026-01-07_10-59-36/checkpoints/ema_epoch40-49.ckpt \
+  --gpu 3 \
+  --mode full
+```
+
+关键说明：
+
+- 运行容器：`alpharank_hyper_decoy_wukelin`
+- 容器 `/project` 对应宿主机 `/home/wukelin/ProtenixAffinity2`
+- 容器 `/data` 对应宿主机 `/msa/data`
+- 主控脚本仍从当前仓库 `/home/wukelin/ProtenixAffinity` 启动，并自动同步辅助脚本到容器 `/project`
+- 如果 MSA 还在旧宿主路径 `/data/protein/...`，pipeline 会自动复制到 `/msa/data/...`，确保容器内 `/data/...` 可见
+- `--gpu` 同时控制 Protenix predict 和 openbind inference
+- 输出 CSV 实际格式为 `ligand,score`
+
+推荐先阅读 [pipeline/QUICKSTART.md](pipeline/QUICKSTART.md)，完整参数和故障排查见 [pipeline/README.md](pipeline/README.md)。内置测试可直接运行：
+
+```bash
+bash test_data/test_run.sh
+```
+
+验证成功后，示例结果会写入 `output/TestRun/results/ev-a71_2a.csv`。
+
 For more information on the model's performance and capabilities, see our technical report ([biorxiv](https://www.biorxiv.org/content/10.1101/2025.01.08.631967v1) | [pdf](Protenix_Technical_Report.pdf)).
 
 You can follow our [twitter](https://x.com/ai4s_protenix) or join the conversation in the [discord server](https://discord.gg/8ZMWy89aMf).

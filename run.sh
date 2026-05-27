@@ -1185,129 +1185,687 @@
 #     --start 8750
 
 # sample val 1w 0.5 1.0
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_1.lmdb \
-    --start 0 \
-    --end 2250
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_1.lmdb \
+#     --start 0 \
+#     --end 2250
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_2.lmdb \
-    --start 2250 \
-    --end 4500
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_2.lmdb \
+#     --start 2250 \
+#     --end 4500
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_3.lmdb \
-    --start 4500 \
-    --end 6750
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_3.lmdb \
+#     --start 4500 \
+#     --end 6750
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_4.lmdb \
-    --start 6750 \
-    --end 9000
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_4.lmdb \
+#     --start 6750 \
+#     --end 9000
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_5.lmdb \
-    --start 9000 \
-    --end 11250
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_5.lmdb \
+#     --start 9000 \
+#     --end 11250
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \ 
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_6.lmdb \
-    --start 11250 \
-    --end 13500
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \ 
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_6.lmdb \
+#     --start 11250 \
+#     --end 13500
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_7.lmdb \
-    --start 13500 \
-    --end 15750
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_7.lmdb \
+#     --start 13500 \
+#     --end 15750
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_8.lmdb \
-    --start 15750
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/pair/block_8.lmdb \
+#     --start 15750
 
-# sample val 1w 0.5 1.0 triplet
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_1.lmdb \
-    --start 0 \
-    --end 1250
+# # sample val 1w 0.5 1.0 triplet
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_1.lmdb \
+#     --start 0 \
+#     --end 1250
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_2.lmdb \
-    --start 1250 \
-    --end 2500
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_2.lmdb \
+#     --start 1250 \
+#     --end 2500
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_3.lmdb \
-    --start 2500 \
-    --end 3750
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_3.lmdb \
+#     --start 2500 \
+#     --end 3750
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_4.lmdb \
-    --start 3750 \
-    --end 5000
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_4.lmdb \
+#     --start 3750 \
+#     --end 5000
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_5.lmdb \
-    --start 5000 \
-    --end 6250
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_5.lmdb \
+#     --start 5000 \
+#     --end 6250
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_6.lmdb \
-    --start 6250 \
-    --end 7500
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_6.lmdb \
+#     --start 6250 \
+#     --end 7500
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
-    --seeds 101 \
-    --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_7.lmdb \
-    --start 7500 \
-    --end 8750
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_7.lmdb \
+#     --start 7500 \
+#     --end 8750
 
-protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
-    --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+# protenix predict --input /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_8.lmdb \
+#     --start 8750
+
+
+
+
+
+
+# CUDA_VISIBLE_DEVICES=0 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w_list/sample_3w_pairandlist.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w_list/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_1.lmdb \
+#     --start 0 \
+#     --end 13750
+
+# CUDA_VISIBLE_DEVICES=1 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w_list/sample_3w_pairandlist.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w_list/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_2.lmdb \
+#     --start 13750 \
+#     --end 27500
+
+# CUDA_VISIBLE_DEVICES=2 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w_list/sample_3w_pairandlist.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w_list/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_3.lmdb \
+#     --start 27500 \
+#     --end 41250
+
+# CUDA_VISIBLE_DEVICES=3 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w_list/sample_3w_pairandlist.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w_list/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_4.lmdb \
+#     --start 41250 \
+#     --end 55000
+    
+
+# CUDA_VISIBLE_DEVICES=4 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w_list/sample_3w_pairandlist.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w_list/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_5.lmdb \
+#     --start 55000 \
+#     --end 68750
+
+# CUDA_VISIBLE_DEVICES=5 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w_list/sample_3w_pairandlist.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w_list/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_6.lmdb \
+#     --start 68750 \
+#     --end 82500
+
+# CUDA_VISIBLE_DEVICES=6 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w_list/sample_3w_pairandlist.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w_list/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_7.lmdb \
+#     --start 82500 \
+#     --end 96250
+
+# CUDA_VISIBLE_DEVICES=7 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w_list/sample_3w_pairandlist.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w_list/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_8.lmdb \
+#     --start 96250 
+    
+
+
+
+
+
+# CUDA_VISIBLE_DEVICES=1 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_list_0.5/sample_list_0.5.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_list_0.5/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_1.lmdb \
+#     --start 0 \
+#     --end 34000
+
+# CUDA_VISIBLE_DEVICES=2 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_list_0.5/sample_list_0.5.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_list_0.5/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_2.lmdb \
+#     --start 34000 \
+#     --end 68000
+
+# CUDA_VISIBLE_DEVICES=3 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_list_0.5/sample_list_0.5.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_list_0.5/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_3.lmdb \
+#     --start 68000 \
+#     --end 102000
+    
+
+# CUDA_VISIBLE_DEVICES=4 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_list_0.5/sample_list_0.5.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_list_0.5/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_4.lmdb \
+#     --start 102000 \
+#     --end 136000
+
+# CUDA_VISIBLE_DEVICES=5 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_list_0.5/sample_list_0.5.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_list_0.5/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_5.lmdb \
+#     --start 136000 \
+#     --end 170000
+
+# CUDA_VISIBLE_DEVICES=6 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_list_0.5/sample_list_0.5.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_list_0.5/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_6.lmdb \
+#     --start 170000 \
+#     --end 204000
+
+# CUDA_VISIBLE_DEVICES=7 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_list_0.5/sample_list_0.5.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_list_0.5/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/pair/sample_3w_pairandlist_7.lmdb \
+#     --start 204000 
+    
+    
+
+
+# CUDA_VISIBLE_DEVICES=4 protenix predict --input /data/rerank/protenix/chembl_bdb/hmdb/hmdb1.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/hmdb/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/hmdb/pair/hmdb1.lmdb \
+#     --start 0 \
+#     --end 5000
+    
+# CUDA_VISIBLE_DEVICES=5 protenix predict --input /data/rerank/protenix/chembl_bdb/hmdb/hmdb2.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/hmdb/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/hmdb/pair/hmdb2.lmdb \
+#     --start 5000 \
+#     --end 10000
+
+# CUDA_VISIBLE_DEVICES=6 protenix predict --input /data/rerank/protenix/chembl_bdb/hmdb/hmdb3.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/hmdb/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/hmdb/pair/hmdb3.lmdb \
+#     --start 10000 \
+#     --end 15000
+
+# CUDA_VISIBLE_DEVICES=3 protenix predict --input /data/rerank/protenix/chembl_bdb/cliff/8_protein.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/cliff/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/cliff/pair/8_protein.lmdb \
+#     --start 0 
+
+   
+    
+# CUDA_VISIBLE_DEVICES=2 protenix predict --input /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/sample_3w_pairandlist_protein.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/sample_3w_pairandlist/training_protein.lmdb \
+#     --start 0 
+
+
+    
+# CUDA_VISIBLE_DEVICES=0 protenix predict --input /data/rerank/protenix/chembl_bdb/cyp3a4/cyp3a4_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/cyp3a4/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/cyp3a4/pair/cyp3a4_new_1.lmdb \
+#     --start 0 \
+#     --end 2300
+
+# CUDA_VISIBLE_DEVICES=1 protenix predict --input /data/rerank/protenix/chembl_bdb/cyp3a4/cyp3a4_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/cyp3a4/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/cyp3a4/pair/cyp3a4_new_2.lmdb \
+#     --start 2300 \
+#     --end 4600
+
+# CUDA_VISIBLE_DEVICES=2 protenix predict --input /data/rerank/protenix/chembl_bdb/cyp3a4/cyp3a4_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/cyp3a4/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/cyp3a4/pair/cyp3a4_new_3.lmdb \
+#     --start 4600 \
+#     --end 6900
+
+# CUDA_VISIBLE_DEVICES=0 protenix predict --input /data/rerank/protenix/chembl_bdb/missing_ligands/missing_ligands_unique.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/missing_ligands/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/missing_ligands/pair_new/missing_ligands_1.lmdb \
+#     --start 0 \
+#     --end 18000 
+
+# CUDA_VISIBLE_DEVICES=1 protenix predict --input /data/rerank/protenix/chembl_bdb/missing_ligands/missing_ligands_unique.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/missing_ligands/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/missing_ligands/pair_new/missing_ligands_2.lmdb \
+#     --start 18000 \
+#     --end 36000 
+
+# CUDA_VISIBLE_DEVICES=2 protenix predict --input /data/rerank/protenix/chembl_bdb/missing_ligands/missing_ligands_unique.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/missing_ligands/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/missing_ligands/pair_new/missing_ligands_3.lmdb \
+#     --start 36000 \
+#     --end 54000 
+
+# CUDA_VISIBLE_DEVICES=3 protenix predict --input /data/rerank/protenix/chembl_bdb/missing_ligands/missing_ligands_unique.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/missing_ligands/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/missing_ligands/pair_new/missing_ligands_4.lmdb \
+#     --start 54000 \
+#     --end 72000 
+
+# CUDA_VISIBLE_DEVICES=4 protenix predict --input /data/rerank/protenix/chembl_bdb/missing_ligands/missing_ligands_unique.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/missing_ligands/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/missing_ligands/pair_new/missing_ligands_5.lmdb \
+#     --start 72000 \
+#     --end 90000 
+
+# CUDA_VISIBLE_DEVICES=5 protenix predict --input /data/rerank/protenix/chembl_bdb/missing_ligands/missing_ligands_unique.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/missing_ligands/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/missing_ligands/pair_new/missing_ligands_6.lmdb \
+#     --start 90000 \
+#     --end 108000 
+
+CUDA_VISIBLE_DEVICES=2 protenix predict --input /data/rerank/protenix/chembl_bdb/openbind/openbind_protein.json \
+    --out_dir /data/rerank/protenix/chembl_bdb/openbind/output \
     --seeds 101 \
     --use_msa_server \
-    --lmdb /data/rerank/protenix/chembl_bdb/sample_val_1w_0.5_1.0/triplet/block_8.lmdb \
-    --start 8750
+    --reduce \
+    --lmdb /data/rerank/protenix/chembl_bdb/openbind/pair/openbind_protein.lmdb \
+    --start 0 
+
+
+# CUDA_VISIBLE_DEVICES=1 protenix predict --input /data/rerank/protenix/chembl_bdb/mers/mers.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/mers/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/mers/pair/mers.lmdb \
+#     --start 500 \
+#     --end 1000
+  
+# CUDA_VISIBLE_DEVICES=3 protenix predict --input /data/rerank/protenix/chembl_bdb/mers/mers.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/mers/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/mers/pair/mers.lmdb \
+#     --start 1000 
+
+
+# CUDA_VISIBLE_DEVICES=6 protenix predict --input /data/rerank/protenix/chembl_bdb/protenix_90/493091_top50.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/protenix_90/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/protenix_90/pair/493091_top50.lmdb \
+#     --start 0
+
+# CUDA_VISIBLE_DEVICES=1 protenix predict --input /data/rerank/protenix/chembl_bdb/wdr91/wdr91.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/wdr91/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/wdr91/pair/wdr91_2.lmdb \
+#     --start 45000 \
+#     --end 90000 
+
+# CUDA_VISIBLE_DEVICES=2 protenix predict --input /data/rerank/protenix/chembl_bdb/wdr91/wdr91.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/wdr91/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/wdr91/pair/wdr91_3.lmdb \
+#     --start 90000 \
+#     --end 135000 
+
+# CUDA_VISIBLE_DEVICES=3 protenix predict --input /data/rerank/protenix/chembl_bdb/wdr91/wdr91.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/wdr91/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/wdr91/pair/wdr91_4.lmdb \
+#     --start 135000 \
+#     --end 180000 
+
+# CUDA_VISIBLE_DEVICES=4 protenix predict --input /data/rerank/protenix/chembl_bdb/wdr91/wdr91.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/wdr91/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/wdr91/pair/wdr91_5.lmdb \
+#     --start 180000 \
+#     --end 225000 
+
+# CUDA_VISIBLE_DEVICES=5 protenix predict --input /data/rerank/protenix/chembl_bdb/wdr91/wdr91.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/wdr91/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/wdr91/pair/wdr91_6.lmdb \
+#     --start 225000 \
+#     --end 270000 
+
+# CUDA_VISIBLE_DEVICES=6 protenix predict --input /data/rerank/protenix/chembl_bdb/wdr91/wdr91.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/wdr91/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/wdr91/pair/wdr91_7.lmdb \
+#     --start 270000 \
+#     --end 315000 
+
+# CUDA_VISIBLE_DEVICES=7 protenix predict --input /data/rerank/protenix/chembl_bdb/wdr91/wdr91.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/wdr91/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/wdr91/pair/wdr91_8.lmdb \
+#     --start 315000 
+  
+
+
+
+# CUDA_VISIBLE_DEVICES=7 protenix predict --input /data/rerank/protenix/chembl_bdb/hard_decoys_new/random300_489030.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/hard_decoys_new/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/hard_decoys_new/pair/random300_489030.lmdb \
+#     --start 0 
+    
+# CUDA_VISIBLE_DEVICES=5 protenix predict --input /data/rerank/protenix/chembl_bdb/davis/davis_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/davis/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/davis/pair/davis_2.lmdb \
+#     --start 7500 \
+#     --end 15000
+
+# CUDA_VISIBLE_DEVICES=6 protenix predict --input /data/rerank/protenix/chembl_bdb/davis/davis_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/davis/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/davis/pair/davis_3.lmdb \
+#     --start 15000 \
+#     --end 22500
+
+# CUDA_VISIBLE_DEVICES=7 protenix predict --input /data/rerank/protenix/chembl_bdb/davis/davis_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/davis/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/davis/pair/davis_4.lmdb \
+#     --start 22500 
+
+# CUDA_VISIBLE_DEVICES=3 protenix predict --input /data/rerank/protenix/chembl_bdb/hard_decoys_new/hard_decoys_combined_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/hard_decoys_new/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/hard_decoys_new/pair/hard_decoys_combined_new_2.lmdb \
+#     --start 800 
+
+# CUDA_VISIBLE_DEVICES=4 protenix predict --input /data/rerank/protenix/chembl_bdb/hard_decoys/hard_decoys_combined.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/hard_decoys/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/hard_decoys/pair/hard_decoys_combined_2.lmdb \
+#     --start 100 \
+#     --end 200
+
+# CUDA_VISIBLE_DEVICES=5 protenix predict --input /data/rerank/protenix/chembl_bdb/hard_decoys/hard_decoys_combined.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/hard_decoys/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/hard_decoys/pair/hard_decoys_combined_3.lmdb \
+#     --start 200 \
+#     --end 300    
+
+# CUDA_VISIBLE_DEVICES=6 protenix predict --input /data/rerank/protenix/chembl_bdb/hard_decoys/hard_decoys_combined.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/hard_decoys/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/hard_decoys/pair/hard_decoys_combined_4.lmdb \
+#     --start 300 
+
+# CUDA_VISIBLE_DEVICES=4 protenix predict --input /data/rerank/protenix/chembl_bdb/hard_decoys/hard_decoys_1481.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/hard_decoys/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/hard_decoys/pair/hard_decoys_1481.lmdb \
+#     --start 0 
+
+# CUDA_VISIBLE_DEVICES=5 protenix predict --input /data/rerank/protenix/chembl_bdb/hard_decoys/hard_decoys_488975.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/hard_decoys/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/hard_decoys/pair/hard_decoys_488975.lmdb \
+#     --start 0 
+
+# CUDA_VISIBLE_DEVICES=6 protenix predict --input /data/rerank/protenix/chembl_bdb/urgent/urgent.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/urgent/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/urgent/pair/urgent_3.lmdb \
+#     --start 400 \
+#     --end 600
+    
+     
+
+
+# CUDA_VISIBLE_DEVICES=7 protenix predict --input /data/rerank/protenix/chembl_bdb/urgent/urgent.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/urgent/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/urgent/pair/urgent_4.lmdb \
+#     --start 600
+
+# CUDA_VISIBLE_DEVICES=2 protenix predict --input /data/rerank/protenix/chembl_bdb/cyp3a4/cyp3a4.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/cyp3a4/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/cyp3a4/pair/cyp3a4_2.lmdb \
+#     --start 3000 \
+#     --end 6000
+
+# CUDA_VISIBLE_DEVICES=3 protenix predict --input /data/rerank/protenix/chembl_bdb/cyp3a4/cyp3a4.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/cyp3a4/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/cyp3a4/pair/cyp3a4_3.lmdb \
+#     --start 6000
+    
+# CUDA_VISIBLE_DEVICES=5 protenix predict --input /data/rerank/protenix/chembl_bdb/dude/dude_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/dude/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/dude/pair/dude_2.lmdb \
+#     --start 900 \
+#     --end 1800
+
+# CUDA_VISIBLE_DEVICES=6 protenix predict --input /data/rerank/protenix/chembl_bdb/dude/dude_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/dude/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/dude/pair/dude_3.lmdb \
+#     --start 1800 \
+#     --end 2700
+
+# CUDA_VISIBLE_DEVICES=7 protenix predict --input /data/rerank/protenix/chembl_bdb/dude/dude_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/dude/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/dude/pair/dude_4.lmdb \
+#     --start 2700 
+    
+# CUDA_VISIBLE_DEVICES=2 protenix predict --input /data/rerank/protenix/chembl_bdb/th/th_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/th/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/th/pair/th_3.lmdb \
+#     --start 5000 \
+#     --end 7500 
+
+# CUDA_VISIBLE_DEVICES=3 protenix predict --input /data/rerank/protenix/chembl_bdb/th/th_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/th/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/th/pair/th_4.lmdb \
+#     --start 7500 
+
+# CUDA_VISIBLE_DEVICES=0 protenix predict --input /data/rerank/protenix/chembl_bdb/newtest2/newtest2.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/newtest2/output \
+#     --seeds 101 \
+#     --use_msa_server \
+#     --reduce \
+#     --lmdb /data/rerank/protenix/chembl_bdb/newtest2/pair/newtest2.lmdb \
+#     --start 0 
+
+
+
+
+# CUDA_VISIBLE_DEVICES=6 protenix predict --input /data/rerank/protenix/chembl_bdb/fep_new/fep_new.json \
+#     --out_dir /data/rerank/protenix/chembl_bdb/fep_new/test1 \
+#     --seeds 101 \
+#     --model_name "protenix_mini_esm_v0.5.0" \
+#     --reduce \
+#     --start 0 

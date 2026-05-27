@@ -317,6 +317,9 @@ def predict(input, out_dir, seeds, use_msa_server, use_esm, lmdb, start, end, re
     :param input, out_dir, use_msa_server, use_esm
     :return:
     """
+    import torch.multiprocessing as mp
+    mp.set_start_method("fork", force=True)
+
     init_logging()
     logger.info(
         f"run infer with input={input}, out_dir={out_dir}, use_msa_server={use_msa_server}, use_esm={use_esm}"

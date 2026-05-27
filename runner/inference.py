@@ -292,7 +292,23 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                 s_inputs, s, z = prediction
                 entity_id = data["input_feature_dict"]["entity_id"]
                 n_entity = entity_id.unique().numel()
-                if n_entity == 2:
+                if n_entity == 1:
+                    len_p = entity_id.unique(return_counts=True)[
+                        1
+                    ].item()
+                    # print("len_p:", len_p)
+                    # assert (
+                    #     len_p == z.shape[0]
+                    # ), f"len_p {len_p}, z.shape[0] {z.shape[0]}"
+                    # assert (
+                    #     len_p + len_m == z.shape[0]
+                    # ), f"len_p {len_p}, len_m {len_m}, z.shape[0] {z.shape[0]}"
+
+                    # z_interact = (
+                    #     z[:len_p, len_p:].clone(),  # p_m
+                    #     z[len_p:, :len_p].clone(),  # m_p
+                    # )
+                elif n_entity == 2:
                     len_p, len_m = entity_id.unique(return_counts=True)[
                         1
                     ].tolist()
@@ -338,6 +354,19 @@ def infer_predict(runner: InferenceRunner, configs: Any) -> None:
                         tuple([item.cpu() for item in z_interact]),
                     )
                 elif mode == "reduced":
+                    if n_entity == 1:
+                        s_inputs_p = s_inputs[:len_p].mean(dim=0)
+                        #s_inputs_m = s_inputs[len_p:].mean(dim=0)
+                        s_p = s[:len_p].mean(dim=0)
+                        #s_m = s[len_p:].mean(dim=0)
+                        #z_pm = z_interact[0].mean(dim=(0, 1))
+                        cache[sample_name] = (
+                            s_inputs_p.cpu(),
+                            #s_inputs_m.cpu(),
+                            s_p.cpu(),
+                            #s_m.cpu(),
+                            #z_pm.cpu(),
+                        )
                     if n_entity == 2:
                         s_inputs_p = s_inputs[:len_p].mean(dim=0)
                         s_inputs_m = s_inputs[len_p:].mean(dim=0)
