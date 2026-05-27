@@ -25,7 +25,7 @@ def generate_predict_script(
     script_content = f"""#!/bin/bash
 export CUDA_VISIBLE_DEVICES={gpu}
 
-python /project/pipeline/run_predict.py \\
+PYTHONPATH=/project python /project/pipeline/run_predict.py \\
     --input {json_path} \\
     --out_dir {output_dir} \\
     --lmdb {lmdb_path} \\
