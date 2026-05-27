@@ -133,6 +133,9 @@ class PipelineRunner:
                 print(f"❌ 辅助脚本不存在: {src}")
                 return False
             dest.parent.mkdir(parents=True, exist_ok=True)
+            if src.resolve() == dest.resolve():
+                print(f"  ✓ 已在目标位置: {dest}")
+                continue
             shutil.copy2(src, dest)
             print(f"✓ {src.name} -> {dest}")
         return True
