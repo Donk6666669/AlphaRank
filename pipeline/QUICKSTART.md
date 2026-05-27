@@ -39,7 +39,7 @@ CC(=O)Oc1ccccc1C(=O)O ligand_004
 
 > 如果这个 MSA 目录只存在于旧挂载 `/data/protein/...`，pipeline 会自动复制到单容器挂载 `/msa/data/...`，使其在 `alpharank_hyper_decoy_wukelin` 的 `/data/...` 下可见。
 
-> 如果还没有 MSA，可以先在 [ColabFold](https://colab.research.google.com/github/sokrypton/ColabFold/blob/main/MSA.ipynb) 生成，或参考 `docs/msa_pipeline.md`。
+> 如果还没有 MSA，可以先在 [ColabFold](https://colab.research.google.com/github/sokrypton/ColabFold/blob/main/MSA.ipynb) 生成。
 
 ---
 
@@ -99,7 +99,7 @@ test_lig_001,-11.539435
 test_lig_003,-11.542738
 ```
 
-- **score 越小，预测亲和力越强**
+- **score 是负的双曲测地距离，通常数值越大（越接近 0）预测亲和力越强**
 - 文件按 target 分组，每个 target 一个 CSV
 
 ---

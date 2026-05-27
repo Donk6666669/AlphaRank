@@ -126,6 +126,7 @@ class PipelineRunner:
         helper_files = [
             (self.pipeline_dir / "run_predict.py", Path(self.host_project_dir) / "pipeline" / "run_predict.py"),
             (self.workspace_dir / "test_scripts" / "transform.py", Path(self.host_project_dir) / "test_scripts" / "transform.py"),
+            (self.workspace_dir / "test_scripts" / "openbind.py", Path(self.host_project_dir) / "test_scripts" / "openbind.py"),
         ]
         for src, dest in helper_files:
             if not src.exists():

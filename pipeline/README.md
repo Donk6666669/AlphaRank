@@ -39,7 +39,6 @@ ProtenixAffinity/
 │   └── README.md              # 本文档
 ├── test_scripts/
 │   └── transform.py           # LMDB名字转换（运行时同步到单容器/project）
-├── batch_run.py               # GPU任务调度
 └── output/                    # 输出目录（自动生成）
     └── <project_name>/
         ├── json/              # JSON配置文件
@@ -182,7 +181,7 @@ test_lig_002,-11.511119
 test_lig_001,-11.539435
 test_lig_003,-11.542738
 ```
-**score** 为亲和力得分（越小越强）。运行日志中会额外打印 `dist/angle/omega` 等几何描述符。
+**score** 为负的双曲测地距离，通常数值越大（越接近 0）表示预测亲和力越强。运行日志中会额外打印 `dist/angle/omega` 等几何描述符。
 
 ## 🐛 故障排查
 

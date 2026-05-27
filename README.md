@@ -1,241 +1,130 @@
-# Protenix: Protein + X
+# AlphaRank
 
-A trainable PyTorch reproduction of [AlphaFold 3](https://www.nature.com/articles/s41586-024-07487-w).
+AlphaRank 是一个面向 **protein–ligand binding affinity ranking** 的双曲空间排序模型与自动化推理 Pipeline。
 
-## ProtenixAffinity 一键亲和力预测 Pipeline
+它使用 co-folding 模型提取蛋白和小分子的表示，再通过可学习投影映射到 Lorentz 双曲空间中，并以**负的双曲测地距离**作为亲和力排序分数。相比普通欧氏表示，双曲空间的切向放大效应更适合区分结构极其相似、但活性差异显著的 hard inactives。
 
-本仓库已集成蛋白-小分子亲和力预测自动化流程，可从 FASTA + SMI + 预计算 MSA 一键生成最终打分 CSV。完整流程现在统一在单个 Docker 容器 `alpharank_hyper_decoy_wukelin` 中执行：Protenix pair embedding、LMDB 转换、protein LMDB 抽取和 openbind ranking inference 都不再依赖第二个容器。
+当前仓库提供从 FASTA + SMI + 预计算 MSA 到最终 per-target CSV 排序结果的一键流程。
 
-最小运行方式：
+---
+
+## 核心功能
+
+- 输入蛋白 FASTA 与小分子 SMI 文件
+- 自动生成 Protenix/co-folding 推理 JSON 与 Shell 脚本
+- 在单个 Docker 容器中生成 protein–ligand pair embedding LMDB
+- 自动转换 LMDB 名称并抽取 protein-only LMDB
+- 加载 AlphaRank checkpoint 进行 binding affinity ranking
+- 输出每个 target 一个 CSV：`ligand,score`
+
+---
+
+## 当前运行架构
+
+AlphaRank Pipeline 当前为**单容器模式**：
+
+- Docker 镜像构建文件：`docker/Dockerfile`
+- 容器内代码路径：`/project`
+- 容器内数据路径：`/data`
+- 容器内日志/权重路径：`/log`
+
+Pipeline 入口：
 
 ```bash
-cd /home/wukelin/ProtenixAffinity
-
-python pipeline/run_pipeline.py \
-  --fasta /path/to/protein.fasta \
-  --smi /path/to/ligands.smi \
-  --msa_dir /data/rerank/protenix/chembl_bdb/openbind/msa \
-  --project_name AlphaRank \
-  --output_dir /data/rerank/protenix/chembl_bdb/alpharank/output \
-  --lmdb_dir /data/rerank/protenix/chembl_bdb/alpharank/pair \
-  --ckpt_path /log/train/alpharank_hyper_decoy_new/DataModule.HYPMLPPairRanker.ListListRankCriterion.2026-01-07_10-59-36/checkpoints/ema_epoch40-49.ckpt \
-  --gpu 3 \
-  --mode full
+python pipeline/run_pipeline.py ...
 ```
 
-关键说明：
+详细部署步骤见 [DEPLOY.md](DEPLOY.md)。
 
-- 运行容器：`alpharank_hyper_decoy_wukelin`
-- 容器 `/project` 对应宿主机 `/home/wukelin/ProtenixAffinity2`
-- 容器 `/data` 对应宿主机 `/msa/data`
-- 主控脚本仍从当前仓库 `/home/wukelin/ProtenixAffinity` 启动，并自动同步辅助脚本到容器 `/project`
-- 如果 MSA 还在旧宿主路径 `/data/protein/...`，pipeline 会自动复制到 `/msa/data/...`，确保容器内 `/data/...` 可见
-- `--gpu` 同时控制 Protenix predict 和 openbind inference
-- 输出 CSV 实际格式为 `ligand,score`
+快速上手见 [pipeline/QUICKSTART.md](pipeline/QUICKSTART.md)。
 
-推荐先阅读 [pipeline/QUICKSTART.md](pipeline/QUICKSTART.md)，完整参数和故障排查见 [pipeline/README.md](pipeline/README.md)。内置测试可直接运行：
+完整参数说明见 [pipeline/README.md](pipeline/README.md)。
+
+---
+
+## 快速测试
+
+1. 构建并启动 Docker 容器：
+
+```bash
+pip install docker-compose sh
+python docker.py startd --build
+```
+
+2. 准备 checkpoint 与 MSA 数据。
+
+3. 运行测试数据：
 
 ```bash
 bash test_data/test_run.sh
 ```
 
-验证成功后，示例结果会写入 `output/TestRun/results/ev-a71_2a.csv`。
+输出示例：
 
-For more information on the model's performance and capabilities, see our technical report ([biorxiv](https://www.biorxiv.org/content/10.1101/2025.01.08.631967v1) | [pdf](Protenix_Technical_Report.pdf)).
-
-You can follow our [twitter](https://x.com/ai4s_protenix) or join the conversation in the [discord server](https://discord.gg/8ZMWy89aMf).
-
-![Protenix predictions](assets/protenix_predictions.gif)
-
-## ⚡ Try it online
-- [Web server link](https://protenix-server.com)
-
-
-## 🔥 Feature Update
-* 🚀 The preview version of [constraint feature](./README.md#early-access-to-new-constraint-feature) is released to branch [`constraint_esm`](https://github.com/bytedance/Protenix/tree/constraint_esm).
-* 🪐 The [training data pipeline](./docs/prepare_training_data.md) is released.
-* ⚡️  The [MSA pipeline](./docs/msa_pipeline.md) is released.
-* 🛸 Use [local colabfold_search](./docs/colabfold_compatiable_msa.md) to generate protenix-compatible MSA.
-
-## Installation
-
-### Run with PyPI (recommended):
-
-```bash
-pip3 install protenix
-```
-### Run with Docker:
-
-If you're interested in model training, we recommand to [<u> run with docker</u>](docs/docker_installation.md).
-
-### Local installation (cpu only)
-For development on a CPU-only machine, it is convenient to install with the `--cpu` flag in editable mode:
-```
-python3 setup.py develop --cpu
+```csv
+ligand,score
+test_lig_002,-11.511119
+test_lig_001,-11.539435
+test_lig_003,-11.542738
 ```
 
-## Inference
+`score` 是负的双曲测地距离，通常**数值越大（越接近 0）表示预测亲和力越强**。
 
-### Command line inference
+---
 
-If you set up `Protenix` by `pip`, you can run the following command to do model inference:
+## 目录结构
 
-```bash
-# run with example.json, which contains precomputed msa dir.
-protenix predict --input examples/example.json --out_dir  ./output --seeds 101 --use_msa_server
-
-# run with multiple json files, the default seed is 101.
-protenix predict --input ./jsons_dir/ --out_dir  ./output --use_msa_server
-
-# if the json do not contain precomputed msa dir,
-# add --use_msa_server to search msa and then predict.
-# if mutiple seeds are provided, split them by comma.
-protenix predict --input examples/example_without_msa.json --out_dir ./output --seeds 101,102 --use_msa_server
+```text
+AlphaRank/
+├── docker/                 # Dockerfile 与容器依赖
+├── docker-compose.yml      # 容器编排配置
+├── docker.py               # 容器管理脚本
+├── pipeline/               # 一键推理 Pipeline
+├── protenix/               # co-folding 表示提取与 AlphaRank 模型代码
+├── runner/                 # Protenix/co-folding 推理入口
+├── configs/                # 推理配置
+├── conf/                   # AlphaRank/训练相关配置（保留用于模型兼容）
+├── test_data/              # 最小测试输入
+├── test_scripts/           # LMDB 转换与 AlphaRank inference 脚本
+└── DEPLOY.md               # 从零部署指南
 ```
 
-### Convert PDB/CIF file to json
+---
 
-If your input is pdb or cif file, you can convert it to json file for inference.
+## 输入与输出
 
-```bash
-# ensure `release_data/ccd_cache/components.cif` or run:
-python scripts/gen_ccd_cache.py -c release_data/ccd_cache/ -n [num_cpu]
+### 输入
 
-# for PDB
-# download pdb file
-wget https://files.rcsb.org/download/7pzb.pdb
-# run with pdb/cif file, and convert it to json file for inference.
-protenix tojson --input examples/7pzb.pdb --out_dir ./output
+- FASTA：蛋白序列
+- SMI：小分子名称与 SMILES
+- MSA：预计算多序列比对目录
+- checkpoint：AlphaRank 模型权重
 
-# for CIF (same process)
-# download cif file
-wget https://files.rcsb.org/download/7pzb.cif
-# run with pdb/cif file, and convert it to json file for inference.
-protenix tojson --input examples/7pzb.cif --out_dir ./output
+### 输出
+
+```text
+output/<project_name>/results/<target_name>.csv
 ```
 
-### Performance details
+CSV 格式：
 
-**Detailed information on the format of the input JSON file and the output files can be found in [<u> input and output documentation </u>](docs/infer_json_format.md)**.
-
-Alternatively you can run inference by:
-
-Note: by default, we do not use layernorm and EvoformerAttention kernels for simple configuration, if you want to speed up inference, see [<u> setting up kernels documentation </u>](docs/kernels.md).
-
-```bash
-bash inference_demo.sh
+```csv
+ligand,score
+compound_001,-10.42
+compound_002,-11.03
 ```
 
-Arguments in this scripts are explained as follows:
+---
 
-* `input_json_path`: path to a JSON file that fully describes the input.
-* `dump_dir`: path to a directory where the results of the inference will be saved.
-* `dtype`: data type used in inference. Valid options include `"bf16"` and `"fp32"`.
-* `use_msa`: whether to use the MSA feature, the default is true.
-* `use_esm`: whether to use the ESM feature, the default is false.
+## 文档
 
+- [DEPLOY.md](DEPLOY.md)：Docker 环境、镜像构建、数据与 checkpoint 准备
+- [pipeline/QUICKSTART.md](pipeline/QUICKSTART.md)：最快运行方式
+- [pipeline/README.md](pipeline/README.md)：Pipeline 参数与分步流程
+- [pipeline/TOOLS.md](pipeline/TOOLS.md)：工具脚本说明
 
-### Convert PDB/CIF file to json
-
-If your input is pdb or cif file, you can convert it to json file for inference.
-```bash
-# run with pdb/cif file, and convert it to json file for inference.
-protenix tojson --input examples/7pzb.pdb --out_dir ./output
-```
-
-### MSA search
-We also provide an independent MSA search function, you can do msa search from json file or fasta file.
-```bash
-# run msa search with json file, it will write precomputed msa dir info to a new json file.
-protenix msa --input examples/example_without_msa.json --out_dir ./output
-
-# run msa search with fasta file which only contains protein.
-protenix msa --input examples/prot.fasta --out_dir ./output
-```
-
-### Run with PyMol
-
-If you want to run Protenix inference with `PyMol`, please refer to [PyMOLfold](https://github.com/colbyford/PyMOLfold).
-
-## Training
-If you're interested in model training, see [<u> training documentation </u>](docs/training.md).
-
-## Performance
-#### **Model Performance across Several Benchmarks**
-![Overall Metrics](assets/overall_metrics.png)
-
-#### ***Early Access to NEW Constraint Feature!***
-
-🎉 Protenix now allows users to specify ***contacts***, enabling the model to leverage additional inter-chain information as constraint guidance! We benchmarked our constraint feature on Posebuster and a protein-antibody interfaces subset. Protenix demonstrates powerful ability in predicting more accurate structures. If you want to have a try, see our [page](docs/infer_json_format.md#constraint) for details about the input format.
-
-![Constraint Metrics](assets/constraint_metrics.png)
-
-> **Tips:** Our online service already supports the new features, so feel free to try it now! Due to the preview version, the constraint support is only applicable in the branch `constraint_esm`. If you want to run inference via the command line, please check out to this branch first.
-
-And you can run local with the fllowing command (you must install protenix by yourself from source):
-```
-# run esm inference with msa
-protenix predict --input examples/example.json --out_dir  ./output_msa --seeds 101 --use_esm --use_msa_server
-
-# or run esm inference without msa
-protenix predict --input examples/example.json --out_dir  ./output_no_msa --seeds 101 --use_esm
-
-# run constraint inference with msa
-protenix predict --input examples/example_constraint.json --out_dir  ./output_constraint --seeds 101 --use_msa_server
-
-# or run constraint inference with msa and esm
-protenix predict --input examples/example_constraint.json --out_dir  ./output_msa_esm --seeds 101 --use_msa_server --use_esm
-```
-
-## Training and Inference Cost
-
-See the [<u>model_train_inference_cost documentation</u>](docs/model_train_inference_cost.md) for memory and time consumption in training and inference.
-
-
-## Citing This Work
-
-If you use this code or the model in your research, please cite the following paper:
-
-```
-@article{chen2025protenix,
-  title={Protenix - Advancing Structure Prediction Through a Comprehensive AlphaFold3 Reproduction},
-  author={Chen, Xinshi and Zhang, Yuxuan and Lu, Chan and Ma, Wenzhi and Guan, Jiaqi and Gong, Chengyue and Yang, Jincai and Zhang, Hanyu and Zhang, Ke and Wu, Shenghao and Zhou, Kuangqi and Yang, Yanping and Liu, Zhenyu and Wang, Lan and Shi, Bo and Shi, Shaochen and Xiao, Wenzhi},
-  year={2025},
-  doi = {10.1101/2025.01.08.631967},
-  journal = {bioRxiv}
-}
-```
-
-
-## Acknowledgements
-
-Implementation of the layernorm operators referred to [OneFlow](https://github.com/Oneflow-Inc/oneflow) and [FastFold](https://github.com/hpcaitech/FastFold). We used [OpenFold](https://github.com/aqlaboratory/openfold) for some [module](protenix/openfold_local/) implementations, except the [`LayerNorm`](protenix/model/layer_norm/).
-
-
-## Contribution
-
-Please check [Contributing](CONTRIBUTING.md) for more details. If you encounter problems using Protenix, feel free to create an issue! We also welcome pull requests from the community.
-
-```bash
-pip install pre-commit
-pre-commit install
-```
-
-So new commits will be automatically checked.
-
-## Code of Conduct
-
-Please check [Code of Conduct](CODE_OF_CONDUCT.md) for more details.
-
-## Security
-
-If you discover a potential security issue in this project, or think you may
-have discovered a security issue, we ask that you notify Bytedance Security via our [security center](https://security.bytedance.com/src) or [vulnerability reporting email](sec@bytedance.com).
-
-Please do **not** create a public GitHub issue.
+---
 
 ## License
 
-The Protenix project, including code and model parameters, is made available under the [Apache 2.0 License](./LICENSE), it is free for both academic research and commercial use.
-
-We welcome inquiries and collaboration opportunities for advanced applications of our model, such as developing new features, fine-tuning for specific use cases, and more. Please feel free to contact us at ai4s-bio@bytedance.com.
+请参考 [LICENSE](LICENSE)。

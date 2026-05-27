@@ -103,9 +103,7 @@ MSA（Multiple Sequence Alignment）是蛋白结构预测的必须输入，需�
     <ProteinName>.a3m     ← MSA 文件
 ```
 
-生成 MSA 的方法参考：
-- [ColabFold MSA](https://colab.research.google.com/github/sokrypton/ColabFold/blob/main/MSA.ipynb)
-- `docs/msa_pipeline.md`（本仓库内）
+生成 MSA 的方法可参考 [ColabFold MSA](https://colab.research.google.com/github/sokrypton/ColabFold/blob/main/MSA.ipynb)。
 
 ---
 
@@ -166,7 +164,7 @@ compound_001,-11.51
 compound_002,-11.54
 ```
 
-**score 越小，预测亲和力越强。**
+**score 是负的双曲测地距离，通常数值越大（越接近 0）预测亲和力越强。**
 
 ---
 
