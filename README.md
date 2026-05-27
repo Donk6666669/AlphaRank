@@ -1,6 +1,6 @@
 # AlphaRank
 
-AlphaRank 是一个面向 **protein–ligand binding affinity ranking** 的双曲空间排序模型与自动化推理 Pipeline。
+AlphaRank 是一个面向 **protein–ligand binding affinity ranking** 的双曲空间排序模型。
 
 它使用 co-folding 模型提取蛋白和小分子的表示，再通过可学习投影映射到 Lorentz 双曲空间中，并以**负的双曲测地距离**作为亲和力排序分数。相比普通欧氏表示，双曲空间的切向放大效应更适合区分结构极其相似、但活性差异显著的 hard inactives。
 
