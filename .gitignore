@@ -145,7 +145,6 @@ release_data/
 # Temporary / scratch scripts
 tmp*.py
 quick_check*.py
-lorentz.py
 hyptrain.py
 validation.sh
 run_unifep.sh

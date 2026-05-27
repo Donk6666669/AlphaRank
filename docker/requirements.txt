@@ -71,6 +71,7 @@ fair-esm~=2.0.0
 # =============================================
 python-dotenv   # loading env variables from .env file
 rich            # beautiful text formatting in terminal
+loguru          # logging helper used by Lorentz geometry utilities
 pytest          # tests
 sh              # for running bash commands in some tests
 # ipython         # convenient interactive shell
