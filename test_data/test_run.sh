@@ -29,14 +29,14 @@ FASTA_FILE="${FASTA_FILE:-$REPO_ROOT/test_data/test_protein.fasta}"
 SMI_FILE="${SMI_FILE:-$REPO_ROOT/test_data/test_ligands.smi}"
 
 # MSA目录（单一运行容器 alpharank_hyper_decoy_wukelin 内路径）
-MSA_DIR="/data/rerank/protenix/chembl_bdb/openbind/msa"
+MSA_DIR="${MSA_DIR:-/data/rerank/protenix/chembl_bdb/openbind/msa}"
 
 # 输出目录和LMDB目录（单一运行容器内路径，/data 对应宿主机 /msa/data）
-OUTPUT_DIR="/data/rerank/protenix/chembl_bdb/test_run/output"
-LMDB_DIR="/data/rerank/protenix/chembl_bdb/test_run/pair"
+OUTPUT_DIR="${OUTPUT_DIR:-/data/rerank/protenix/chembl_bdb/${PROJECT_NAME}/output}"
+LMDB_DIR="${LMDB_DIR:-/data/rerank/protenix/chembl_bdb/${PROJECT_NAME}/pair}"
 
 # checkpoint路径（单一运行容器内路径）
-CKPT_PATH="/log/train/alpharank_hyper_decoy_new/DataModule.HYPMLPPairRanker.ListListRankCriterion.2026-01-07_10-59-36/checkpoints/ema_epoch40-49.ckpt"
+CKPT_PATH="${CKPT_PATH:-/log/train/alpharank_hyper_decoy_new/DataModule.HYPMLPPairRanker.ListListRankCriterion.2026-01-07_10-59-36/checkpoints/ema_epoch40-49.ckpt}"
 
 echo "============================================"
 echo "Pipeline 完整测试运行"
